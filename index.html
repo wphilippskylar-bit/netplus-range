@@ -220,7 +220,7 @@ html,body{overflow-x:hidden}
 <body>
 <noscript>This study app needs JavaScript enabled.</noscript>
 <script>
-/* build 9cf70134ca */
+/* build 37f0092677 */
 /* NetSim — a small IOS-style network simulator.
    Devices: pc, srv (server), sw (switch), rtr (router).
    Real L2 (VLAN/trunk) flooding + L3 hop-by-hop forwarding, ACLs, static routes,
@@ -1303,11 +1303,11 @@ html,body{overflow-x:hidden}
   'use strict';
   var NS = window.NetSim;
   function R(a, b) { return a + Math.floor(Math.random() * (b - a + 1)); }
+  function shuffleA(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
   function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
   function uniqChoices(correct, wrongs) {
     var seen = {}, out = [String(correct)]; seen[correct] = 1;
     wrongs.forEach(function (w) { w = String(w); if (!seen[w] && out.length < 4) { seen[w] = 1; out.push(w); } });
-    var k = 1; while (out.length < 4) { var f = String(correct) + ' '.repeat(k++); out.push(f); }
     return out;
   }
   function mcq(q, correct, wrongs, e, d) { return { q: q, c: uniqChoices(correct, wrongs), a: 0, e: e, d: d }; }
@@ -1330,7 +1330,7 @@ html,body{overflow-x:hidden}
     var why = 'Mask /' + pf + ' = ' + NS.n2ip(m) + '. Block size in the interesting octet = ' + blk + '. Network = ' + NS.n2ip(netw) + ', broadcast = ' + NS.n2ip(bc) + ', usable hosts = 2^' + (32 - pf) + ' − 2 = ' + hosts + '.';
     if (v === 0) { wr = [NS.n2ip(netw + blk * (pf >= 24 ? 1 : 256)), NS.n2ip(netw + 1), NS.n2ip((netw - (pf >= 24 ? blk : blk * 256)) >>> 0), NS.n2ip(bc)]; return mcq('What is the network address of ' + addr + '?', NS.n2ip(netw), wr, why, 1); }
     if (v === 1) { wr = [NS.n2ip(bc - 1), NS.n2ip(bc + 1), NS.n2ip(netw), NS.n2ip(bc + (pf >= 24 ? blk : 256 * blk))]; return mcq('What is the broadcast address of ' + addr + '?', NS.n2ip(bc), wr, why, 1); }
-    if (v === 2) { wr = [hosts + 2, hosts + 1, hosts * 2 + 2, Math.max(2, hosts / 2 - 1)]; return mcq('How many usable host addresses are in a /' + pf + '?', hosts, wr, why, 1); }
+    if (v === 2) { wr = [hosts + 2, hosts + 1, hosts * 2 + 2, Math.max(2, hosts / 2 - 1), hosts * 4 + 2, hosts + 4]; return mcq('How many usable host addresses are in a /' + pf + '?', hosts, wr, why, 1); }
     if (v === 3) { wr = [NS.n2ip(NS.pfx2mask(pf - 1)), NS.n2ip(NS.pfx2mask(pf + 1)), NS.n2ip(NS.pfx2mask(pf - 8 > 0 ? pf - 8 : pf + 2))]; return mcq('Which subnet mask equals /' + pf + '?', NS.n2ip(m), wr, why, 1); }
     wr = [NS.n2ip(netw) + ' – ' + NS.n2ip(bc), NS.n2ip(netw + 1) + ' – ' + NS.n2ip(bc), NS.n2ip(netw) + ' – ' + NS.n2ip(bc - 1)];
     return mcq('What is the usable host range of ' + addr + '?', NS.n2ip(netw + 1) + ' – ' + NS.n2ip(bc - 1), wr, why, 1);
@@ -1352,8 +1352,8 @@ html,body{overflow-x:hidden}
   }
   function portQ() {
     var p = pick(PORTS), others = PORTS.filter(function (x) { return x !== p; });
-    if (Math.random() < .5) return mcq('Which protocol uses port ' + p[0] + ' (' + p[2] + ')?', p[1], [pick(others)[1], pick(others)[1], pick(others)[1], pick(others)[1]], p[1] + ' = ' + p[2] + ' ' + p[0] + '.', 1);
-    return mcq('What is the default port for ' + p[1] + '?', p[0], [pick(others)[0], pick(others)[0], pick(others)[0], pick(others)[0]], p[1] + ' = ' + p[2] + ' ' + p[0] + '.', 1);
+    if (Math.random() < .5) return mcq('Which protocol uses port ' + p[0] + ' (' + p[2] + ')?', p[1], shuffleA(others).map(function (x) { return x[1]; }), p[1] + ' = ' + p[2] + ' ' + p[0] + '.', 1);
+    return mcq('What is the default port for ' + p[1] + '?', p[0], shuffleA(others).map(function (x) { return x[0]; }), p[1] + ' = ' + p[2] + ' ' + p[0] + '.', 1);
   }
   var OSI = [['Ethernet frame / MAC address', 2], ['Switch (Layer 2)', 2], ['Router', 3], ['IP / ICMP', 3], ['TCP / UDP / port numbers', 4], ['Hub / repeater / cable', 1],
     ['TLS encryption (CompTIA view)', 6], ['HTTP / DNS / DHCP', 7], ['Session setup, RPC, NetBIOS sessions', 5], ['Bits, signaling, connectors', 1], ['Segments', 4], ['Packets', 3], ['Frames', 2],
@@ -1383,7 +1383,7 @@ html,body{overflow-x:hidden}
     var w = pick(WIFI), o = WIFI.filter(function (x) { return x !== w; }), v = R(0, 2);
     var why = w[0] + ' = ' + w[3] + ', ' + w[1] + ', max ~' + w[2] + '.';
     if (v === 0) return mcq('Which frequency band(s) does ' + w[0] + ' (' + w[3] + ') use?', w[1], o.map(function (x) { return x[1]; }), why, 2);
-    if (v === 1) return mcq('Which standard is marketed as ' + w[3] + '?', w[0], o.map(function (x) { return x[0]; }), why, 2);
+    if (v === 1) { var named = WIFI.filter(function (x) { return /\d/.test(x[3]); }), g = pick(named); return mcq('Which standard is marketed as ' + g[3] + '?', g[0], WIFI.filter(function (x) { return x !== g; }).map(function (x) { return x[0]; }), g[0] + ' = ' + g[3] + ', ' + g[1] + ', max ~' + g[2] + '.', 2); }
     var ch = pick([['Non-overlapping 2.4 GHz channels in the US', '1, 6, 11', ['1, 5, 9', '1, 7, 13', '2, 6, 10']], ['Wireless security that uses SAE instead of a PSK handshake', 'WPA3', ['WPA2-PSK', 'WEP', 'TKIP']], ['Enterprise Wi-Fi authentication that uses a RADIUS server', '802.1X / EAP', ['WPA2-Personal', 'MAC filtering', 'Open + captive portal']], ['Channel width that gives the most throughput on 5/6 GHz (but fewest channels)', '160 MHz', ['20 MHz', '40 MHz', '22 MHz']]]);
     return mcq(ch[0] + '?', ch[1], ch[2], ch[0] + ': ' + ch[1] + '.', 2);
   }
@@ -2015,7 +2015,7 @@ window.COURSE = {
       Q('Which technology carries Layer 2 segments over a routed Layer 3 underlay with up to ~16 million segments?', 'VXLAN', ['802.1Q', 'STP', 'GRE only'], '24-bit VNI.', 1),
       Q('iSCSI provides what?', 'Block-level storage over IP networks', ['File sharing over SMB', 'Wireless roaming', 'DNS caching'], 'iSCSI = SCSI commands in TCP/IP.', 1),
       Q('After changing a website\'s IP, some users still reach the old server for hours. Why?', 'Cached DNS records have not expired (TTL)', ['DHCP lease is too short', 'The MX record is wrong', 'STP is reconverging'], 'Lower TTL days before a migration.', 5),
-      Q('Which provides a fixed, never-from-DHCP address by preventing the server from handing it out, so you can set it statically?', 'DHCP exclusion', ['DHCP reservation', 'APIPA', 'PTR'], 'Exclusions keep statics out of the pool.', 2),
+      Q('A server will be configured with a static IP inside the DHCP range. What stops DHCP from handing that same address to someone else?', 'DHCP exclusion', ['DHCP reservation', 'APIPA', 'PTR'], 'Exclusions keep statics out of the pool.', 2),
       T('Type the interface command to relay DHCP to server 10.50.0.10.', ['ip helper-address 10.50.0.10'], 'ip helper-address 10.50.0.10', 2, 'IOS interface command'),
       T('Which DNS record type is an alias? (one word)', ['cname'], 'CNAME = canonical name alias.', 1)
     ],
@@ -2042,7 +2042,7 @@ window.COURSE = {
       ['Active-active', 'All nodes handle traffic simultaneously.'], ['Active-passive', 'Standby node waits to take over.'], ['Tabletop exercise', 'Discussion-based walkthrough of a DR/IR plan.'], ['SLA', 'Service Level Agreement — guaranteed uptime/performance.'], ['EOL / EOS', 'End of life / end of support — vendor stops patches.']
     ],
     qs: [
-      Q('Which syslog severity level is the most severe?', '0 – Emergency', ['7 – Debug', '3 – Error', '1 – Critical'], '0 Emergency is most severe; 7 Debug least.', 3),
+      Q('Which syslog severity level is the most severe?', '0 – Emergency', ['7 – Debug', '3 – Error', '1 – Alert'], '0 Emergency is most severe; 7 Debug least.', 3),
       Q('Users complain VoIP calls sound choppy, though bandwidth utilization is only 30%. Which metric should you check first?', 'Jitter', ['Throughput', 'CRC errors on the printer port', 'DHCP lease time'], 'Variable delay breaks real-time audio even with spare bandwidth.', 3),
       Q('Security needs to know which internal hosts sent the most data to an external IP last night, without full packet captures. Use:', 'NetFlow/IPFIX data', ['SNMP traps', 'A cable certifier', 'A tone probe'], 'Flow records summarize conversations.', 3),
       Q('A company can tolerate losing at most 4 hours of data. That is the:', 'RPO', ['RTO', 'MTTR', 'MTBF'], 'RPO is about data loss; RTO is about downtime.', 3),
@@ -2106,7 +2106,7 @@ window.COURSE = {
       Q('Thousands of compromised IoT devices flood your web server. This is:', 'DDoS', ['On-path attack', 'Phishing', 'VLAN hopping'], 'Distributed denial of service from a botnet.', 4),
       Q('Which control validates ARP replies against DHCP snooping bindings?', 'Dynamic ARP Inspection', ['Port mirroring', 'BPDU guard', 'IP helper'], 'DAI blocks ARP poisoning.', 4),
       Q('A technician must manage routers even when the production network is down. Best solution?', 'Out-of-band management via console server or cellular', ['In-band SSH only', 'Telnet over the WAN', 'A larger subnet'], 'OOB is independent of production paths.', 4),
-      T('Type the ACL wildcard for a single host keyword (one word).', ['host'], '"host 10.1.1.1" = 10.1.1.1 0.0.0.0.', 4),
+      T('In an ACL, which one-word keyword matches exactly one IP address (same as wildcard 0.0.0.0)?', ['host'], '"host 10.1.1.1" = 10.1.1.1 0.0.0.0.', 4),
       T('Type the global config command that sets an encrypted privileged password "N3tPlus!".', ['enable secret N3tPlus!', 'enable secret n3tplus!'], 'enable secret uses a strong hash; enable password does not.', 4, 'IOS command')
     ],
     labs: ['l-acl', 'l-harden']
