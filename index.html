@@ -214,13 +214,30 @@ body.lite .topo{background:#0b1017}
 @media (max-width:420px){.term .out{height:300px}h1{font-size:1.3rem}}
 .lab>*,.stack,.termwrap,.term,#main{min-width:0}
 html,body{overflow-x:hidden}
+/* ---- PBQ labs ---- */
+.pbq-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--bg2);margin:6px 0}
+.pbq-row .it{flex:1 1 220px;font-size:.92rem}
+.pbq-row select,.pbq input.num,.acl select,.acl input{background:var(--panel);color:var(--text);border:1px solid var(--line2);border-radius:8px;padding:8px;font-size:16px;max-width:100%}
+.pbq-row.ok{border-color:rgba(61,220,132,.55)}
+.pbq-row.bad{border-color:rgba(255,92,108,.6)}
+.ord{display:flex;gap:8px;align-items:center;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--bg2);margin:6px 0}
+.ord .n{font:700 13px var(--mono);color:var(--acc);flex:0 0 22px}
+.ord .t{flex:1}
+.ord button{min-width:40px}
+.acl{width:100%;border-collapse:collapse;font-size:.85rem}
+.acl td,.acl th{border-bottom:1px solid var(--line);padding:6px 4px;text-align:left;vertical-align:middle}
+.acl select,.acl input{width:100%;font-size:15px;padding:6px}
+.flow{font:12px var(--mono);padding:6px 8px;border-radius:8px;margin:4px 0;background:var(--bg2);border:1px solid var(--line)}
+.flow.ok{border-color:rgba(61,220,132,.55)}.flow.bad{border-color:rgba(255,92,108,.6)}
+.reftable{width:100%;border-collapse:collapse;font-size:.85rem}.reftable td,.reftable th{border-bottom:1px solid var(--line);padding:6px;text-align:left;vertical-align:top}
+.reftable th{color:var(--acc);font-weight:600}
 
 </style>
 </head>
 <body>
 <noscript>This study app needs JavaScript enabled.</noscript>
 <script>
-/* build 37f0092677 */
+/* build 056c24b3e9 */
 /* NetSim — a small IOS-style network simulator.
    Devices: pc, srv (server), sw (switch), rtr (router).
    Real L2 (VLAN/trunk) flooding + L3 hop-by-hop forwarding, ACLs, static routes,
@@ -2378,6 +2395,788 @@ window.COURSE = {
 })();
 
 ;
+/* Depth packs: add lesson sections, questions, cards and labs to existing stages (runs before the engine). */
+window.X = {
+  add: function (id, o) {
+    var s = COURSE.stages.filter(function (x) { return x.id === id; })[0];
+    if (!s) throw new Error('X.add: no stage ' + id);
+    if (o.lesson) s.lesson = (s.lesson || []).concat(o.lesson);
+    if (o.qs) s.qs = (s.qs || []).concat(o.qs);
+    if (o.cards) s.cards = (s.cards || []).concat(o.cards);
+    if (o.labs) s.labs = (s.labs || []).concat(o.labs);
+    if (o.gateN) s.gateN = o.gateN;
+  }
+};
+
+;
+/* Net+ depth pack 1 — Foundations (s01–s05): objective-mapped deep dives and ~200 more explained questions. */
+(function () {
+  var X = window.X, Q = window.Q, T = window.TYPE;
+
+  // ================= s01 =================
+  X.add('s01', { gateN: 20,
+    lesson: [{ h: 'Objective deep dive (1.2, 1.6, 1.7): appliances, traffic types and network types', html:
+      '<table><tr><th>Appliance</th><th>What it does</th><th>Exam cue</th></tr>' +
+      '<tr><td>Router</td><td>Forwards packets between networks using a routing table</td><td>"different subnets", "default gateway"</td></tr>' +
+      '<tr><td>L2 / L3 switch</td><td>Forwards frames by MAC; an L3 switch also routes between VLANs (SVIs)</td><td>"inter-VLAN routing at wire speed"</td></tr>' +
+      '<tr><td>Firewall / NGFW</td><td>Permits or denies by rules; NGFW adds application awareness, IPS, URL filtering</td><td>"application-aware", "layer 7"</td></tr>' +
+      '<tr><td>IDS / IPS</td><td>IDS detects and alerts (passive, out of band); IPS blocks inline</td><td>"alert only" vs "drop"</td></tr>' +
+      '<tr><td>Load balancer</td><td>Spreads requests across servers, health-checks them</td><td>"distribute", "VIP", "health check"</td></tr>' +
+      '<tr><td>Proxy</td><td>Makes requests on behalf of clients (forward) or servers (reverse); caches and filters</td><td>"content filtering", "caching"</td></tr>' +
+      '<tr><td>NAS vs SAN</td><td>NAS = file-level shares over the LAN (SMB/NFS); SAN = block-level storage network</td><td>"file share" vs "block"</td></tr>' +
+      '<tr><td>Wireless controller</td><td>Central config, roaming and RF management for many lightweight APs</td><td>"manage 200 APs"</td></tr></table>' +
+      '<ul><li><b>Traffic types:</b> unicast (one-to-one), broadcast (one-to-all in the subnet, IPv4 only), multicast (one-to-subscribed group, 224.0.0.0/4), anycast (one-to-nearest of many, e.g. DNS root servers, IPv6).</li>' +
+      '<li><b>Bandwidth</b> is the capacity of the link; <b>throughput</b> is what you actually get; <b>latency</b> is delay; <b>jitter</b> is variation in delay (hurts voice/video).</li>' +
+      '<li><b>Duplex:</b> half = one direction at a time (hubs, old Wi-Fi), full = both at once (switched Ethernet). A duplex <b>mismatch</b> causes late collisions and slow, error-filled links.</li>' +
+      '<li>Modern additions you must recognize: <b>SD-WAN</b> (software-defined WAN that steers traffic over several links), <b>SASE/SSE</b> (security delivered from the cloud), <b>VPN</b> (encrypted tunnel), <b>CDN</b> (content cached close to users).</li></ul>' }],
+    qs: [
+      Q("Which device inspects traffic inline and can drop malicious packets automatically?", "IPS", ["IDS", "Hub", "Proxy server in transparent cache mode only"], "An IPS sits inline and blocks; an IDS only detects and alerts.", 1),
+      Q("A security team wants alerts about suspicious traffic without any risk of blocking legitimate traffic. Which device?", "IDS", ["IPS", "NGFW in block mode", "Load balancer"], "An IDS is passive (fed by a SPAN/TAP), so it cannot drop traffic.", 1),
+      Q("Which appliance distributes client requests across several web servers and removes failed servers from rotation?", "Load balancer", ["Proxy server", "IDS", "Wireless controller"], "Load balancers health-check pool members and spread connections across them.", 1),
+      Q("Users' web requests go through a server that caches pages and filters categories. What is it?", "Forward proxy", ["Reverse proxy", "Load balancer", "VPN concentrator"], "A forward proxy acts for clients going out to the Internet.", 1),
+      Q("A server in the DMZ receives all inbound HTTPS requests and passes them to internal web servers. What is it?", "Reverse proxy", ["Forward proxy", "IDS", "NAS"], "A reverse proxy fronts servers for incoming clients (often with TLS offload).", 1),
+      Q("Which storage option provides file-level shares to clients over the normal LAN using SMB or NFS?", "NAS", ["SAN", "DAS", "Tape library"], "NAS = file level over Ethernet; SAN = block level on a dedicated network.", 1),
+      Q("A firewall that can identify and block a specific application regardless of port is a:", "Next-generation firewall (NGFW)", ["Stateless packet filter", "Layer 2 switch", "Hub"], "NGFWs add application awareness, IPS and user identity to stateful filtering.", 1),
+      Q("A company manages 300 lightweight APs from one place, including roaming and channel assignment. What device does this?", "Wireless LAN controller", ["Load balancer", "Proxy", "Repeater"], "WLCs centralize AP configuration and RF management.", 1),
+      Q("Which traffic type sends one packet to every host on the local IPv4 subnet?", "Broadcast", ["Unicast", "Multicast", "Anycast"], "Broadcasts go to all hosts in the broadcast domain (e.g. ARP requests).", 1),
+      Q("Which traffic type delivers a stream only to hosts that have joined a group, such as IPTV?", "Multicast", ["Broadcast", "Anycast", "Unicast"], "Multicast uses group addresses (224.0.0.0/4 in IPv4) and IGMP for joins.", 1),
+      Q("Several servers worldwide share the same IP and users reach the nearest one. What is this addressing called?", "Anycast", ["Multicast", "Broadcast", "Unicast"], "Anycast routes to the topologically nearest instance — used by DNS root servers and CDNs.", 1),
+      Q("Which IP version has no broadcast traffic at all?", "IPv6", ["IPv4", "Both", "Neither"], "IPv6 replaces broadcast with multicast (e.g. solicited-node multicast for neighbor discovery).", 1),
+      Q("A 1 Gbps link moves only 400 Mbps of real data during a file copy. The 400 Mbps is the link's:", "Throughput", ["Bandwidth", "Latency", "Jitter"], "Bandwidth is capacity; throughput is the measured rate actually achieved.", 1),
+      Q("VoIP calls sound choppy because packet delay varies wildly from moment to moment. This is:", "Jitter", ["Bandwidth", "Attenuation", "Crosstalk"], "Jitter = variation in latency; real-time traffic needs it low (typically under ~30 ms).", 1),
+      Q("A link shows many late collisions and poor speed. One side is full duplex, the other half. This is a:", "Duplex mismatch", ["Speed mismatch", "Native VLAN mismatch", "MTU mismatch"], "Mismatched duplex causes late collisions, CRC errors and terrible throughput.", 5),
+      Q("Which network type connects sites across a city, often over a carrier's metro Ethernet?", "MAN", ["CAN", "PAN", "SAN"], "Metropolitan Area Network.", 1),
+      Q("Which technology dynamically steers traffic between broadband, LTE and MPLS links based on application needs?", "SD-WAN", ["STP", "VTP", "HSRP"], "SD-WAN uses central policy to pick the best path per application.", 1),
+      Q("Which architecture delivers networking and security (SWG, CASB, ZTNA, FWaaS) as a cloud service close to users?", "SASE", ["SAN", "VLAN", "SCADA"], "Secure Access Service Edge combines SD-WAN with cloud-delivered security.", 1),
+      Q("Which technology caches website content at many locations so users download it from a nearby server?", "CDN", ["NAS", "VPN", "IPAM"], "Content Delivery Networks reduce latency and origin load.", 1),
+      Q("What does a modem do?", "Converts between the provider's signal (DSL, cable, fiber ONT) and Ethernet", ["Routes between VLANs", "Filters spam", "Assigns IP addresses by default"], "Modem = modulator/demodulator; your router sits behind it.", 1),
+      Q("A star topology's central switch fails. What happens?", "All devices connected to it lose connectivity", ["Only one device fails", "Traffic reroutes automatically", "Nothing — stars are fault tolerant"], "The central device is the single point of failure of a star.", 1),
+      Q("A partial mesh WAN is chosen over a full mesh mainly because it:", "Costs less while still giving redundancy to key sites", ["Has no single points of failure at all", "Needs more links", "Removes the need for routing"], "Partial mesh balances redundancy and cost.", 1),
+      Q("Which topology is typical of a modern data center fabric?", "Spine-and-leaf", ["Bus", "Ring", "Daisy chain"], "Every leaf connects to every spine for predictable, low east-west latency.", 1),
+      Q("In a three-tier campus design, which layer connects end devices?", "Access", ["Distribution", "Core", "Spine"], "Access → distribution (policy, routing) → core (fast transport).", 1),
+      Q("In a three-tier design, which layer provides fast, redundant transport between distribution blocks?", "Core", ["Access", "Edge", "Leaf"], "The core should be fast and simple; policy belongs in distribution.", 1),
+      Q("A collapsed core design combines which two layers?", "Core and distribution", ["Access and distribution", "Access and core", "Spine and leaf"], "Small and medium networks often collapse core and distribution.", 1),
+      Q("North-south traffic in a data center refers to traffic:", "Entering or leaving the data center", ["Between servers inside the data center", "Between two VLANs on one switch", "On the management network only"], "East-west = server-to-server inside; north-south = in and out.", 1),
+      Q("What is a VPN concentrator?", "A device that terminates many remote-access or site-to-site VPN tunnels", ["A switch that stacks VLANs", "A DNS cache", "A Wi-Fi repeater"], "It handles encryption for many tunnels at once.", 1),
+      Q("A printer, a thermostat and a door camera on the network are examples of:", "IoT / endpoints", ["Core routers", "Spine switches", "WLAN controllers"], "Endpoints include IoT devices — often hard to patch, so segment them.", 4),
+      Q("Which statement about a Layer 3 switch is correct?", "It can route between VLANs in hardware", ["It cannot forward frames", "It only works with hubs", "It replaces the need for IP addresses"], "L3 switches combine switching with routing (SVIs, routed ports).", 2),
+      Q("What is the main purpose of a DMZ (screened subnet)?", "Host Internet-facing servers separately from the internal network", ["Speed up internal file shares", "Replace the core switch", "Assign IP addresses"], "If a DMZ server is compromised, the internal LAN is still protected.", 4),
+      Q("Which device type makes decisions using IP addresses?", "Router", ["Hub", "Repeater", "Media converter"], "Routers are Layer 3 devices.", 1),
+      Q("Which is a characteristic of peer-to-peer networks?", "Each node can share resources; little central management", ["Centralized authentication", "Scales best for 5,000 users", "Requires a domain controller"], "Fine for tiny networks; hard to secure and manage at scale.", 1),
+      Q("A media converter is used to:", "Connect copper Ethernet to fiber (or two different media types)", ["Convert IPv4 to IPv6", "Translate DNS names", "Convert VLAN tags"], "It changes the physical medium at Layer 1.", 2),
+      Q("Which term describes the round-trip time for a packet to reach a host and return?", "Latency (RTT)", ["Bandwidth", "Throughput", "Duplex"], "ping reports RTT in milliseconds.", 1),
+      Q("A satellite Internet link has 600 ms latency. Which application suffers most?", "Real-time voice calls", ["Large overnight backups", "Email", "Software downloads"], "Interactive, real-time traffic is most sensitive to latency.", 1),
+      Q("Which network device could be described as a 'multiport bridge'?", "Switch", ["Router", "Hub", "Modem"], "Switches learn MACs per port like a bridge, with many ports.", 1),
+      Q("Which of these is a single point of failure in most homes?", "The ISP router/modem", ["Each laptop", "The Wi-Fi password", "The DNS name"], "One box provides routing, Wi-Fi and Internet access.", 1),
+      T("How many links does a full mesh of 5 sites need? (number)", ["10"], "5 × 4 ÷ 2 = 10.", 1, "number"),
+      T("Name the passive device that only detects and alerts on intrusions (acronym).", ["IDS"], "Intrusion Detection System. The inline blocking version is an IPS.", 1, "acronym")
+    ] });
+
+  // ================= s02 =================
+  X.add('s02', { gateN: 20,
+    lesson: [{ h: 'Objective deep dive (1.1): the OSI model as a troubleshooting tool', html:
+      '<table><tr><th>#</th><th>Layer</th><th>PDU</th><th>Examples</th><th>Typical faults</th></tr>' +
+      '<tr><td>7</td><td>Application</td><td>Data</td><td>HTTP, DNS, SMTP, SSH</td><td>Wrong URL, app crash, certificate error</td></tr>' +
+      '<tr><td>6</td><td>Presentation</td><td>Data</td><td>Encoding, encryption (TLS*), compression, JPEG</td><td>Character set issues</td></tr>' +
+      '<tr><td>5</td><td>Session</td><td>Data</td><td>Session setup/teardown, RPC, NetBIOS</td><td>Session timeouts</td></tr>' +
+      '<tr><td>4</td><td>Transport</td><td>Segment / datagram</td><td>TCP, UDP, ports</td><td>Blocked port, firewall, resets</td></tr>' +
+      '<tr><td>3</td><td>Network</td><td>Packet</td><td>IP, ICMP, routers, OSPF</td><td>Wrong IP/mask/gateway, routing</td></tr>' +
+      '<tr><td>2</td><td>Data link</td><td>Frame</td><td>Ethernet, MAC, switches, VLANs, ARP*, 802.11</td><td>VLAN mismatch, STP, MAC issues</td></tr>' +
+      '<tr><td>1</td><td>Physical</td><td>Bits</td><td>Cables, connectors, transceivers, hubs, radio</td><td>Bad cable, no link light, interference</td></tr></table>' +
+      '<p class="small">* TLS and ARP are often placed between layers; for the exam, TLS encryption is Presentation (or 4–7 in practice) and ARP is Layer 2 (it serves Layer 3).</p>' +
+      '<ul><li><b>Encapsulation</b>: data → TCP segment (ports) → IP packet (IP addresses) → Ethernet frame (MAC addresses + FCS) → bits. The receiver de-encapsulates in reverse.</li>' +
+      '<li><b>TCP</b>: connection-oriented, three-way handshake (SYN, SYN-ACK, ACK), sequence numbers, acknowledgments, retransmission, windowing, FIN/RST teardown. <b>UDP</b>: connectionless, no handshake, low overhead — DNS queries, DHCP, VoIP media, streaming, TFTP, SNMP, syslog.</li>' +
+      '<li>MAC addresses change at every router hop; source and destination <b>IP addresses stay the same</b> end to end (unless NAT rewrites them).</li>' +
+      '<li>Troubleshooting approaches: <b>bottom-up</b> (start at cables), <b>top-down</b> (start at the app), <b>divide and conquer</b> (start in the middle, e.g. ping).</li></ul>' }],
+    qs: [
+      Q("At which OSI layer do routers make forwarding decisions?", "Layer 3 — Network", ["Layer 2 — Data link", "Layer 4 — Transport", "Layer 1 — Physical"], "Routers use IP addresses (Layer 3).", 1),
+      Q("A frame check sequence (FCS) used to detect corrupted frames belongs to which layer?", "Data link (Layer 2)", ["Network (Layer 3)", "Transport (Layer 4)", "Session (Layer 5)"], "The Ethernet trailer carries the FCS (CRC).", 1),
+      Q("Port numbers are part of which layer's header?", "Transport (Layer 4)", ["Network (Layer 3)", "Data link (Layer 2)", "Application (Layer 7)"], "TCP/UDP headers carry source and destination ports.", 1),
+      Q("What is the PDU name at the Network layer?", "Packet", ["Frame", "Segment", "Bit"], "Bits (L1), frames (L2), packets (L3), segments/datagrams (L4).", 1),
+      Q("What is the correct TCP three-way handshake order?", "SYN, SYN-ACK, ACK", ["ACK, SYN, FIN", "SYN, ACK, SYN-ACK", "SYN, FIN, ACK"], "Client SYN, server SYN-ACK, client ACK.", 1),
+      Q("Which TCP flag abruptly ends a connection, for example when a port is closed?", "RST", ["SYN", "PSH", "URG"], "A closed TCP port replies to SYN with RST.", 1),
+      Q("Which protocol is connectionless and has no acknowledgments?", "UDP", ["TCP", "SSH", "HTTPS"], "UDP trades reliability for low overhead.", 1),
+      Q("Why does VoIP media typically use UDP?", "Retransmitting late voice packets is useless; low delay matters more than reliability", ["UDP encrypts calls", "TCP cannot carry audio", "UDP guarantees delivery"], "Real-time media prefers speed; lost packets are concealed rather than resent.", 1),
+      Q("Which TCP feature lets the receiver tell the sender how much data it can accept before an acknowledgment?", "Windowing", ["Checksumming", "Multicasting", "Fragmentation"], "The window size provides flow control.", 1),
+      Q("As a packet crosses three routers, which addresses change at each hop?", "Source and destination MAC addresses", ["Source and destination IP addresses", "TCP ports", "Nothing changes"], "Each hop builds a new frame; IPs stay the same unless NAT rewrites them.", 1),
+      Q("Which layer is responsible for encryption and character encoding in the OSI model?", "Presentation (Layer 6)", ["Session (Layer 5)", "Transport (Layer 4)", "Network (Layer 3)"], "Layer 6 formats, encrypts and compresses data.", 1),
+      Q("Which layer establishes, manages and terminates sessions between applications?", "Session (Layer 5)", ["Presentation", "Transport", "Data link"], "Layer 5 handles dialog control.", 1),
+      Q("A user has no link light on their NIC. Which layer is the problem?", "Physical (Layer 1)", ["Network (Layer 3)", "Application (Layer 7)", "Transport (Layer 4)"], "No link = cable, port, NIC or transceiver.", 5),
+      Q("A user gets 'connection refused' to a web server they can ping. Which layer is most likely involved?", "Transport (Layer 4) — the port is closed or blocked", ["Physical", "Data link", "Network"], "Ping proves L3; a refused connection points to the port/service.", 5),
+      Q("Which troubleshooting approach starts by testing with ping to split the problem in half?", "Divide and conquer", ["Top-down", "Bottom-up", "Follow the path only"], "Start in the middle (L3) and move up or down based on the result.", 5),
+      Q("Which device operates at Layer 1 only?", "Hub / repeater", ["Switch", "Router", "Firewall"], "Hubs repeat bits without reading addresses.", 1),
+      Q("In the TCP/IP model, which layer combines OSI layers 5, 6 and 7?", "Application", ["Transport", "Internet", "Link"], "TCP/IP: Link, Internet, Transport, Application.", 1),
+      Q("In the TCP/IP model, the 'Internet' layer maps to which OSI layer?", "Network (Layer 3)", ["Transport (Layer 4)", "Data link (Layer 2)", "Session (Layer 5)"], "IP lives at the Internet layer.", 1),
+      Q("Which header field prevents IP packets from looping forever?", "TTL (Time to Live)", ["Window size", "FCS", "Sequence number"], "Each router decrements TTL; at 0 the packet is dropped and ICMP Time Exceeded is sent.", 1),
+      Q("traceroute discovers hops by:", "Sending packets with increasing TTL values and reading ICMP Time Exceeded replies", ["Querying DNS for each router", "Sending ARP requests", "Using SNMP"], "TTL 1 reveals hop 1, TTL 2 hop 2, and so on.", 5),
+      Q("What does encapsulation mean?", "Each layer adds its own header (and trailer) around the data from the layer above", ["Encrypting data", "Compressing files", "Splitting VLANs"], "Data → segment → packet → frame → bits.", 1),
+      Q("Which protocol maps an IPv4 address to a MAC address?", "ARP", ["DNS", "RARP only in IPv6", "NAT"], "ARP is broadcast-based; IPv6 uses Neighbor Discovery instead.", 1),
+      Q("Which protocol replaces ARP in IPv6?", "NDP (Neighbor Discovery Protocol, ICMPv6)", ["DHCPv6", "IGMP", "LLDP"], "NDP uses neighbor solicitation/advertisement messages.", 1),
+      Q("A web page loads but images are corrupted due to a codec problem. At which layer is the issue?", "Presentation (Layer 6)", ["Physical", "Network", "Transport"], "Formats and encoding are Layer 6 concerns.", 1),
+      Q("Which OSI layer does a switch normally operate at?", "Layer 2", ["Layer 1", "Layer 3", "Layer 7"], "Switches forward frames by MAC address (L3 switches also route).", 1),
+      Q("Which statement about TCP vs UDP is true?", "TCP guarantees ordered delivery; UDP does not", ["UDP is always faster to set up connections", "TCP has no header", "UDP uses a three-way handshake"], "TCP: reliable, ordered, connection-oriented.", 1),
+      Q("TCP retransmissions are high on a link. What is the likely underlying cause?", "Packet loss (errors, congestion or drops)", ["Too many VLANs", "Wrong DNS server", "IPv6 enabled"], "TCP resends segments that were not acknowledged.", 5),
+      Q("Which layer adds source and destination MAC addresses?", "Data link", ["Network", "Transport", "Physical"], "The Ethernet frame header holds MAC addresses.", 1),
+      Q("A firewall rule matching 'TCP port 443' operates at least at which layer?", "Layer 4", ["Layer 2", "Layer 1", "Layer 6"], "Port filtering is Transport-layer information.", 4),
+      Q("Which approach would you use if users report the CRM app is broken but everything else works?", "Top-down (start at the application)", ["Bottom-up starting with cables", "Replace the core switch", "Reboot all PCs"], "When only one app fails, start at the top.", 5),
+      Q("What is the maximum standard Ethernet payload (MTU)?", "1500 bytes", ["9000 bytes", "512 bytes", "64 bytes"], "1500 is standard; 9000-byte jumbo frames are optional.", 1),
+      Q("A frame smaller than 64 bytes is called a:", "Runt", ["Giant", "Jumbo", "Collision"], "Runts often come from collisions or faulty NICs.", 5),
+      Q("Which field in the TCP header lets the receiver put segments back in order?", "Sequence number", ["TTL", "Checksum only", "Destination MAC"], "Sequence and acknowledgment numbers track bytes.", 1),
+      Q("What does a TCP FIN flag indicate?", "The sender has finished sending and wants to close gracefully", ["A new connection request", "An error", "Urgent data"], "FIN starts the orderly four-way close.", 1),
+      Q("Which protocol data unit does UDP produce?", "Datagram", ["Frame", "Packet", "Bit"], "TCP = segment; UDP = datagram.", 1),
+      T("Type the number of the OSI layer where TCP and UDP operate.", ["4"], "Layer 4 — Transport.", 1, "number"),
+      T("Type the three TCP handshake messages in order, separated by commas.", [/^\s*syn\s*,\s*syn[- ]?ack\s*,\s*ack\s*$/i], "SYN, SYN-ACK, ACK", 1, "SYN, …"),
+      T("Which ICMP message type does traceroute rely on from each hop? (two words)", [/time\s*exceeded/i], "Time Exceeded (type 11), sent when TTL hits 0.", 5, "Time ...")
+    ] });
+
+  // ================= s03 =================
+  X.add('s03', { gateN: 20,
+    lesson: [{ h: 'Objective deep dive (1.5): media, transceivers and their limits', html:
+      '<table><tr><th>Cable</th><th>Speed (typical)</th><th>Max distance</th><th>Notes</th></tr>' +
+      '<tr><td>Cat 5e</td><td>1 Gbps</td><td>100 m</td><td>Minimum for gigabit</td></tr>' +
+      '<tr><td>Cat 6</td><td>1 Gbps (10 Gbps to ~55 m)</td><td>100 m</td><td>Better crosstalk performance</td></tr>' +
+      '<tr><td>Cat 6a</td><td>10 Gbps</td><td>100 m</td><td>Thicker, augmented</td></tr>' +
+      '<tr><td>Cat 8</td><td>25/40 Gbps</td><td>30 m</td><td>Data center, shielded</td></tr>' +
+      '<tr><td>Multimode fiber (OM3/OM4)</td><td>10–100 Gbps</td><td>~300–550 m at 10G</td><td>LED/VCSEL light, thicker core (50 µm)</td></tr>' +
+      '<tr><td>Single-mode fiber (OS2)</td><td>10–400 Gbps</td><td>10 km to 80+ km</td><td>Laser, 9 µm core, long haul</td></tr>' +
+      '<tr><td>Twinax DAC</td><td>10–100 Gbps</td><td>~1–7 m</td><td>Cheap rack-to-rack copper with fixed SFP ends</td></tr>' +
+      '<tr><td>Coax (RG-6)</td><td>Varies</td><td>—</td><td>Cable Internet, F-type connector</td></tr></table>' +
+      '<ul><li><b>Connectors:</b> RJ45 (8P8C copper), RJ11 (phone), LC (small, duplex fiber, very common in SFPs), SC (square push-pull), ST (bayonet twist), MPO/MTP (multi-fiber, 40/100G), F-type (coax).</li>' +
+      '<li><b>Transceivers:</b> SFP (1G), SFP+ (10G), SFP28 (25G), QSFP+ (40G), QSFP28 (100G). The optic type must match the fiber (SR = short reach multimode, LR = long reach single-mode) and both ends.</li>' +
+      '<li><b>Wiring standards:</b> T568A and T568B; same standard on both ends = straight-through; A on one end and B on the other = crossover. Auto-MDIX makes crossovers mostly unnecessary.</li>' +
+      '<li><b>Plenum</b>-rated cable (low smoke, fire-resistant jacket) is required in air-handling spaces above ceilings; PVC is not.</li>' +
+      '<li><b>Copper faults:</b> attenuation (too long), crosstalk (NEXT/FEXT, untwisted pairs), EMI (near motors, fluorescent lights), open/short, split pairs. <b>Fiber faults:</b> dirty connectors, tight bends (bend radius), wrong fiber type, TX/RX reversed, wavelength mismatch.</li>' +
+      '<li><b>PoE:</b> 802.3af (15.4 W), 802.3at PoE+ (30 W), 802.3bt PoE++ (60 W type 3, 90–100 W type 4).</li></ul>' }],
+    qs: [
+      Q("What is the maximum distance for a Cat 6a 10GBASE-T run?", "100 meters", ["55 meters", "185 meters", "2 kilometers"], "All standard twisted-pair Ethernet tops out at 100 m (90 m permanent link + patch cords).", 1),
+      Q("Cat 6 can carry 10 Gbps only up to about:", "55 meters", ["100 meters", "10 meters", "500 meters"], "For 10G at the full 100 m you need Cat 6a.", 1),
+      Q("Which fiber type uses a laser and supports runs of tens of kilometers?", "Single-mode", ["Multimode OM1", "Twinax", "Cat 8"], "Single-mode has a 9 µm core and long reach.", 1),
+      Q("Which connector is small, duplex and the most common on SFP optics?", "LC", ["ST", "RJ11", "F-type"], "LC = Lucent connector, small form factor.", 1),
+      Q("Which connector uses a bayonet twist-lock?", "ST", ["LC", "SC", "MPO"], "ST = 'stick and twist'.", 1),
+      Q("A 40/100 Gbps parallel optic uses many fibers in one ferrule. Which connector?", "MPO/MTP", ["LC", "RJ45", "BNC"], "Multi-fiber push-on connectors carry 8, 12 or more fibers.", 1),
+      Q("Which transceiver form factor supports 10 Gbps?", "SFP+", ["SFP", "GBIC", "RJ11"], "SFP = 1G, SFP+ = 10G, SFP28 = 25G, QSFP28 = 100G.", 2),
+      Q("Which transceiver supports 100 Gbps?", "QSFP28", ["SFP+", "SFP", "QSFP+ (40G)"], "QSFP28 = 4 × 25 Gbps lanes.", 2),
+      Q("Two servers in the same rack need a cheap 10 Gbps connection between SFP+ ports. Best choice?", "Twinax direct attach copper (DAC)", ["Single-mode fiber with LR optics", "Cat 5e", "Coax RG-6"], "DACs are inexpensive for short (few-meter) runs.", 2),
+      Q("A 10GBASE-SR optic is plugged into single-mode fiber and the link will not come up. Why?", "SR optics are designed for multimode fiber", ["SR needs Cat 6a", "The VLAN is wrong", "SR only works at 1 Gbps"], "Match optic type to fiber: SR = multimode, LR/ER = single-mode.", 5),
+      Q("A new fiber link shows no light at the far end, but both optics are good. A common simple cause is:", "TX and RX strands are reversed", ["The VLAN is pruned", "DNS is down", "Duplex mismatch"], "Swap the strand pair; transmit must reach receive.", 5),
+      Q("Which tool verifies whether a fiber strand has a break and where?", "OTDR", ["Toner probe", "Loopback plug", "Multimeter"], "An optical time-domain reflectometer shows distance to faults.", 5),
+      Q("A fiber link has high loss after a technician pulled the cable tightly around a corner. Likely cause?", "Exceeding the bend radius (macrobending)", ["Crosstalk", "EMI", "A duplex mismatch"], "Tight bends leak light out of the core.", 5),
+      Q("A fiber patch shows high loss right after installation. First thing to check?", "Clean and inspect the connectors", ["Replace the switch", "Change the VLAN", "Upgrade the firmware"], "Dirty end faces are the #1 cause of fiber loss.", 5),
+      Q("Which cable must be used in the space above a drop ceiling that carries return air?", "Plenum-rated", ["PVC-jacketed riser", "Outdoor direct-burial only", "Coaxial only"], "Plenum jackets produce less toxic smoke when burning.", 2),
+      Q("Using T568A on one end and T568B on the other produces a:", "Crossover cable", ["Straight-through cable", "Rollover/console cable", "Loopback"], "Pairs 2 and 3 swap.", 1),
+      Q("Which feature lets switch ports work with straight-through or crossover cables automatically?", "Auto-MDIX", ["PortFast", "PoE", "LACP"], "Auto-MDIX detects and swaps transmit/receive pairs.", 2),
+      Q("Unwinding pairs too far at a jack causes which problem?", "Crosstalk (NEXT)", ["Attenuation from length", "Wrong VLAN", "MTU errors"], "Twists cancel interference; keep untwisting to ~13 mm.", 5),
+      Q("A cable run of 130 m is causing intermittent errors. The root issue is:", "Attenuation — the run exceeds 100 m", ["Crosstalk only", "Wrong pinout", "Duplex"], "Signals weaken with distance; use fiber or add a switch.", 5),
+      Q("A cable runs alongside an elevator motor and suffers errors. The cause is:", "EMI", ["Attenuation", "Bend radius", "Jitter"], "Electromagnetic interference; reroute or use shielded cable / fiber.", 5),
+      Q("Which tool finds which wall jack connects to which patch-panel port?", "Toner and probe", ["OTDR", "Spectrum analyzer", "Light meter"], "The tone generator's signal is traced with the probe.", 5),
+      Q("Which tool certifies that a cable run meets Cat 6 performance specifications?", "Cable certifier", ["Toner", "Loopback plug", "Crimper"], "Certifiers test NEXT, attenuation, return loss and length.", 5),
+      Q("What does a punchdown tool terminate?", "Wires into 110 blocks or keystone jacks", ["Fiber connectors", "RJ45 plugs", "Coax F connectors"], "Patch panels and jacks use punchdown (IDC) terminations.", 2),
+      Q("How much power does 802.3at (PoE+) provide per port at the source?", "30 W", ["15.4 W", "60 W", "100 W"], "af = 15.4 W, at = 30 W, bt = 60 / 90+ W.", 2),
+      Q("A new PTZ camera needs 60 W. Which standard must the switch support?", "802.3bt (PoE++)", ["802.3af", "802.3at", "802.11ax"], "Only 802.3bt delivers that much.", 2),
+      Q("APs reboot randomly when many cameras are connected to the same PoE switch. Likely cause?", "The switch's total PoE power budget is exceeded", ["Wrong SSID", "Duplex mismatch", "DNS failure"], "Each switch has a total PoE budget, not just per-port limits.", 5),
+      Q("Which coax connector is used for cable Internet modems?", "F-type", ["BNC", "LC", "RJ45"], "F-type screw-on connectors with RG-6.", 1),
+      Q("Which wiring standard is most common for new commercial installs in the US?", "T568B", ["T568A only", "USOC", "RS-232"], "Either works if used consistently; B is the most common in practice.", 1),
+      Q("A loopback plug is used to:", "Test a port's ability to send and receive on itself", ["Find cable faults by distance", "Measure Wi-Fi signal", "Trace wires in a wall"], "It loops TX back to RX.", 5),
+      Q("Which medium is immune to EMI?", "Fiber optic", ["UTP", "STP", "Coax"], "Light is not affected by electromagnetic interference.", 1),
+      Q("A building needs a 2 km link between two sites at 10 Gbps. Best choice?", "Single-mode fiber with LR optics", ["Cat 6a", "Multimode OM3 with SR", "Twinax"], "Only single-mode reaches that far (LR = 10 km).", 2),
+      Q("Which cable type is designed for 25/40 Gbps over short data center runs of up to 30 m?", "Cat 8", ["Cat 5e", "Cat 6", "RG-59"], "Cat 8 is shielded, 2000 MHz, 30 m.", 1),
+      Q("What is a patch panel used for?", "Terminating horizontal cable runs so short patch cords can connect them to switches", ["Routing between VLANs", "Powering devices", "Converting fiber to copper"], "It keeps permanent cabling organized and changeable.", 2),
+      Q("Which area in a building typically houses the access switches for a floor?", "IDF (intermediate distribution frame)", ["MDF", "DMZ", "NOC"], "The MDF is the main room; IDFs serve floors or wings.", 2),
+      Q("An Ethernet port negotiates only 100 Mbps on a gigabit switch with Cat 5e cable. A likely cable fault is:", "One of the four pairs is broken or miswired", ["Too many VLANs", "Wrong DNS", "Fiber bend radius"], "Gigabit needs all four pairs; 100 Mbps uses only two.", 5),
+      Q("What is 'split pair'?", "Wires from two different pairs are used as one pair, ruining the twist benefit", ["A fiber with two strands", "A VLAN trunk", "A PoE mode"], "Continuity testers may pass it; certifiers catch it via crosstalk.", 5),
+      T("Type the maximum segment length in meters for twisted-pair Ethernet.", ["100"], "100 m.", 1, "meters"),
+      T("Type the PoE standard (802.3__) that provides 30 W per port.", [/^(802\.3)?at$/i], "802.3at (PoE+).", 2, "802.3..")
+    ] });
+
+  // ================= s04 =================
+  X.add('s04', { gateN: 20,
+    lesson: [{ h: 'Objective deep dive (1.8): IPv4 address types you must know cold', html:
+      '<table><tr><th>Range</th><th>Meaning</th></tr>' +
+      '<tr><td>10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16</td><td>RFC 1918 private (not routed on the Internet; needs NAT)</td></tr>' +
+      '<tr><td>100.64.0.0/10</td><td>Carrier-grade NAT shared space (RFC 6598)</td></tr>' +
+      '<tr><td>127.0.0.0/8</td><td>Loopback (127.0.0.1 = this host)</td></tr>' +
+      '<tr><td>169.254.0.0/16</td><td>APIPA / link-local — the host could not reach a DHCP server</td></tr>' +
+      '<tr><td>224.0.0.0/4 (224–239)</td><td>Multicast (Class D)</td></tr>' +
+      '<tr><td>240.0.0.0/4</td><td>Reserved (Class E, experimental)</td></tr>' +
+      '<tr><td>0.0.0.0</td><td>"This network" / unspecified; 0.0.0.0/0 = default route</td></tr>' +
+      '<tr><td>255.255.255.255</td><td>Limited broadcast</td></tr></table>' +
+      '<ul><li>Classful history: A = 1–126 (/8), B = 128–191 (/16), C = 192–223 (/24). Modern networks are <b>classless (CIDR)</b>, but the exam still asks.</li>' +
+      '<li>A host needs four things: <b>IP address, subnet mask, default gateway, DNS server</b>. The gateway must be in the same subnet as the host.</li>' +
+      '<li>Binary place values: 128 64 32 16 8 4 2 1. Mask octets you will see: 128, 192, 224, 240, 248, 252, 254, 255.</li>' +
+      '<li>The host compares (its IP AND mask) to (destination AND mask): equal = local (ARP for the host); different = remote (ARP for the gateway).</li></ul>' }],
+    qs: [
+      Q("Which of these is a private RFC 1918 address?", "172.20.5.9", ["172.32.0.1", "11.0.0.5", "192.169.1.1"], "172.16.0.0–172.31.255.255 is private; 172.32 is public.", 1),
+      Q("A Windows PC shows 169.254.33.7. What happened?", "It could not get an address from DHCP and self-assigned APIPA", ["It received a public address", "It is using a static address", "DNS failed"], "169.254.0.0/16 = Automatic Private IP Addressing.", 5),
+      Q("Which address tests the local TCP/IP stack without using the network?", "127.0.0.1", ["169.254.0.1", "0.0.0.0", "255.255.255.255"], "The loopback range is 127.0.0.0/8.", 1),
+      Q("Which range is reserved for carrier-grade NAT between an ISP and its customers?", "100.64.0.0/10", ["10.0.0.0/8", "192.0.2.0/24", "169.254.0.0/16"], "RFC 6598 shared address space.", 1),
+      Q("An address of 230.1.1.1 is:", "Multicast (Class D)", ["Private Class A", "APIPA", "Experimental Class E"], "224–239 in the first octet is multicast.", 1),
+      Q("What is 11001000 in decimal?", "200", ["192", "208", "232"], "128 + 64 + 8 = 200.", 1),
+      Q("What is 172 in binary?", "10101100", ["10110100", "11001100", "10101010"], "128 + 32 + 8 + 4 = 172.", 1),
+      Q("What is 255.255.255.224 in CIDR notation?", "/27", ["/26", "/28", "/29"], "24 + 3 bits (224 = 11100000).", 1),
+      Q("Which first-octet range was Class B?", "128–191", ["1–126", "192–223", "224–239"], "Class B default mask /16.", 1),
+      Q("Which is the default (classful) mask for 192.168.10.0?", "255.255.255.0", ["255.255.0.0", "255.0.0.0", "255.255.255.128"], "Class C = /24.", 1),
+      Q("A host is 10.1.1.50/24 with gateway 10.1.2.1. What is wrong?", "The gateway is not in the host's subnet", ["Nothing", "The mask is too large", "10.x is public"], "The default gateway must be on the local subnet (10.1.1.0/24).", 5),
+      Q("A host at 192.168.1.20/24 sends to 192.168.1.99. What does it ARP for?", "192.168.1.99 directly — it is local", ["The default gateway", "The DNS server", "Nothing; it broadcasts the packet"], "Same network → ARP for the destination itself.", 1),
+      Q("A host at 192.168.1.20/24 sends to 8.8.8.8. What MAC address goes in the frame?", "The default gateway's MAC", ["8.8.8.8's MAC", "The broadcast MAC", "The DNS server's MAC"], "Remote destinations are reached via the gateway.", 1),
+      Q("Which address is the IPv4 limited broadcast?", "255.255.255.255", ["0.0.0.0", "127.255.255.255", "224.0.0.1"], "Limited broadcast never crosses a router.", 1),
+      Q("What does the route 0.0.0.0/0 represent?", "The default route (any destination)", ["Loopback", "Broadcast", "An APIPA network"], "Used when no more specific route matches.", 2),
+      Q("Which documentation range is safe to use in examples and never routed?", "192.0.2.0/24", ["192.168.0.0/16", "8.8.8.0/24", "100.64.0.0/10"], "TEST-NET-1 (also 198.51.100.0/24 and 203.0.113.0/24).", 1),
+      Q("How many bits are in an IPv4 address?", "32", ["48", "64", "128"], "Four 8-bit octets.", 1),
+      Q("How many bits are in a MAC address?", "48", ["32", "64", "128"], "Six bytes in hex, e.g. 00:1A:2B:3C:4D:5E.", 1),
+      Q("The first 24 bits of a MAC address identify the:", "Manufacturer (OUI)", ["VLAN", "Subnet", "Switch port"], "Organizationally Unique Identifier.", 1),
+      Q("What is the binary value of the mask octet 248?", "11111000", ["11110000", "11111100", "11100000"], "128+64+32+16+8 = 248.", 1),
+      Q("Which statement about public IPv4 addresses is true?", "They are globally unique and routable on the Internet", ["They start with 10.", "They cannot be assigned to servers", "They are only used with IPv6"], "Assigned by RIRs/ISPs.", 1),
+      Q("What lets many private hosts share one public IPv4 address?", "PAT (NAT overload)", ["APIPA", "ARP", "Multicast"], "Port Address Translation tracks connections by port.", 2),
+      Q("A host with IP 192.168.1.10 and mask 255.255.0.0 is on which network?", "192.168.0.0/16", ["192.168.1.0/24", "192.0.0.0/8", "192.168.1.10/32"], "Apply the /16 mask: first two octets.", 1),
+      Q("Which four settings does a typical client need for full IPv4 connectivity?", "IP address, subnet mask, default gateway, DNS server", ["MAC, VLAN, SSID, port", "IP, TTL, MTU, ARP", "Hostname, domain, proxy, NTP"], "Usually provided by DHCP.", 1),
+      Q("An address like 10.0.0.0 with mask /8 written as 10.0.0.0/8 uses which notation?", "CIDR", ["Classful", "Dotted binary", "EUI-64"], "Classless Inter-Domain Routing prefix notation.", 1),
+      Q("Which IPv4 address cannot be assigned to a host in 192.168.5.0/24?", "192.168.5.255", ["192.168.5.1", "192.168.5.254", "192.168.5.100"], ".255 is the broadcast address of that /24.", 1),
+      Q("What is 0xC0 in decimal (relevant when reading hex dumps)?", "192", ["160", "208", "224"], "C = 12; 12 × 16 = 192.", 1),
+      Q("Which class was 'experimental' and is still reserved?", "Class E (240–255)", ["Class D", "Class C", "Class A"], "Class D is multicast; E is reserved.", 1),
+      Q("A user can reach local file servers but nothing on the Internet; ipconfig shows no default gateway. Fix:", "Configure the correct default gateway", ["Change the subnet to /8", "Disable DNS", "Replace the cable"], "No gateway = no way off the local subnet.", 5),
+      Q("A user can reach 8.8.8.8 by IP but not www.example.com. Most likely problem?", "DNS", ["Default gateway", "Subnet mask", "Cable"], "Name resolution is failing, not connectivity.", 5),
+      Q("Two hosts both use 192.168.1.50 and get intermittent connectivity. This is a(n):", "Duplicate IP address conflict", ["Duplex mismatch", "VLAN hopping", "Broadcast storm"], "Fix with DHCP reservations or correct static assignments.", 5),
+      Q("Which is a valid host address in the 10.0.0.0/8 network?", "10.255.255.254", ["10.255.255.255", "10.0.0.0", "11.0.0.1"], "10.0.0.1 – 10.255.255.254 are usable.", 1),
+      T("Type 255.255.255.240 as a CIDR prefix (e.g. /24).", ["/28", "28"], "/28 — 240 = 11110000.", 1, "/__"),
+      T("Convert binary 11110000 to decimal.", ["240"], "128+64+32+16 = 240.", 1, "number"),
+      T("Type the first address of the APIPA range.", ["169.254.0.0"], "169.254.0.0/16 (hosts use 169.254.1.0–169.254.254.255).", 1, "x.x.x.x")
+    ] });
+
+  // ================= s05 =================
+  X.add('s05', { gateN: 20,
+    lesson: [{ h: 'Objective deep dive (1.7): subnetting on paper in under 60 seconds', html:
+      '<pre>Prefix  Mask             Block  Hosts\n/24     255.255.255.0    256    254\n/25     255.255.255.128  128    126\n/26     255.255.255.192   64     62\n/27     255.255.255.224   32     30\n/28     255.255.255.240   16     14\n/29     255.255.255.248    8      6\n/30     255.255.255.252    4      2\n/31     255.255.255.254    2      2 (point-to-point, RFC 3021)\n/32     255.255.255.255    1      1 (single host / loopback)</pre>' +
+      '<ol><li>Find the <b>interesting octet</b> (where the mask is not 255 or 0).</li><li><b>Block size</b> = 256 − mask value in that octet.</li><li>Network = the largest multiple of the block size ≤ the address\'s octet. Broadcast = next network − 1.</li><li>Usable hosts = 2<sup>host bits</sup> − 2.</li></ol>' +
+      '<p><b>VLSM</b>: allocate the <b>largest</b> subnets first, each starting on its own block boundary, then use the leftovers for smaller ones (point-to-point links get /30 or /31). <b>Supernetting / summarization</b>: combine contiguous networks — 192.168.0.0/24 to 192.168.3.0/24 = 192.168.0.0/22.</p>' +
+      '<p>Example: 172.16.45.130/26 → block 64 in the 4th octet → networks .0, .64, .128, .192 → this host is in 172.16.45.128, broadcast .191, usable .129–.190.</p>' }],
+    qs: [
+      Q("What is the network address of 10.20.30.77/27?", "10.20.30.64", ["10.20.30.32", "10.20.30.0", "10.20.30.96"], "Block 32: 64 ≤ 77 < 96.", 1),
+      Q("What is the broadcast address of 192.168.10.70/26?", "192.168.10.127", ["192.168.10.63", "192.168.10.255", "192.168.10.128"], "Block 64: network .64, next .128, broadcast .127.", 1),
+      Q("How many usable hosts are in a /29?", "6", ["8", "14", "2"], "2^3 − 2 = 6.", 1),
+      Q("Which prefix gives at least 50 usable hosts with the least waste?", "/26", ["/25", "/27", "/24"], "/26 = 62 hosts; /27 = 30 is too small.", 1),
+      Q("Which mask is best for a point-to-point WAN link that needs exactly two addresses (traditional design)?", "/30 (255.255.255.252)", ["/29", "/24", "/32"], "/30 gives 2 usable hosts; /31 is also valid on modern gear.", 1),
+      Q("Is 172.16.5.63 a usable host in 172.16.5.32/27?", "No — it is the broadcast address", ["Yes", "No — it is the network address", "Yes — it is the gateway"], "Block 32: .32–.63, broadcast .63.", 1),
+      Q("You need 6 subnets from 192.168.1.0/24. Which prefix gives at least 6 with the most hosts each?", "/27", ["/26", "/28", "/25"], "Borrowing 3 bits gives 8 subnets of 30 hosts.", 1),
+      Q("How many /26 subnets fit into a /24?", "4", ["2", "8", "64"], "2^(26−24) = 4.", 1),
+      Q("Summarize 10.1.0.0/24, 10.1.1.0/24, 10.1.2.0/24 and 10.1.3.0/24 into one route:", "10.1.0.0/22", ["10.1.0.0/23", "10.1.0.0/21", "10.0.0.0/8"], "Four contiguous /24s = one /22.", 2),
+      Q("What is the usable host range of 192.168.50.100/28?", "192.168.50.97 – 192.168.50.110", ["192.168.50.96 – 192.168.50.111", "192.168.50.100 – 192.168.50.114", "192.168.50.97 – 192.168.50.111"], "Block 16: network .96, broadcast .111.", 1),
+      Q("A /20 network has how many usable host addresses?", "4094", ["4096", "2046", "8190"], "2^12 − 2 = 4094.", 1),
+      Q("Which mask corresponds to /21?", "255.255.248.0", ["255.255.240.0", "255.255.252.0", "255.255.255.248"], "Third octet: 11111000 = 248.", 1),
+      Q("What is the network address of 172.16.77.200/20?", "172.16.64.0", ["172.16.77.0", "172.16.72.0", "172.16.0.0"], "Block 16 in the 3rd octet: 64 ≤ 77 < 80.", 1),
+      Q("What is the broadcast of 172.16.77.200/20?", "172.16.79.255", ["172.16.77.255", "172.16.80.255", "172.16.95.255"], "Next network 172.16.80.0, minus one.", 1),
+      Q("Using VLSM, which subnet should you allocate first?", "The one needing the most hosts", ["The point-to-point links", "The smallest", "Alphabetical order"], "Largest first avoids fragmentation and overlaps.", 1),
+      Q("Hosts 192.168.1.30/27 and 192.168.1.40/27 cannot talk without a router. Why?", "They are in different subnets (.0–.31 and .32–.63)", ["Same subnet; it is a cabling issue", "The mask is invalid", "APIPA"], "Block 32 puts them in separate networks.", 5),
+      Q("A /31 subnet is useful because:", "It provides exactly two addresses for a point-to-point link with no waste", ["It has 6 usable hosts", "It is for multicast", "It is a broadcast domain for VLANs"], "RFC 3021 allows /31 on point-to-point links.", 1),
+      Q("How many host bits are in a /25?", "7", ["8", "25", "6"], "32 − 25 = 7 host bits → 126 hosts.", 1),
+      Q("What is the wildcard mask for 255.255.255.240 (used in ACLs and OSPF)?", "0.0.0.15", ["0.0.0.16", "0.0.0.240", "255.255.255.15"], "Wildcard = 255.255.255.255 − mask.", 2),
+      Q("What is the block size for /23 in the third octet?", "2", ["4", "8", "254"], "256 − 254 = 2 → networks .0, .2, .4 … in the 3rd octet.", 1),
+      Q("Is 192.168.3.0 a usable host address in 192.168.2.0/23?", "Yes — the /23 spans 192.168.2.0–192.168.3.255", ["No — it is a network address", "No — it is broadcast", "No — /23 is invalid"], "Only .2.0 and .3.255 are reserved in that /23.", 1),
+      Q("A company has 10.0.0.0/16 and needs subnets of about 500 hosts. Which prefix?", "/23", ["/24", "/22", "/25"], "/23 = 510 usable hosts.", 1),
+      Q("Which two subnets overlap?", "192.168.1.0/25 and 192.168.1.64/26", ["192.168.1.0/26 and 192.168.1.64/26", "192.168.1.128/26 and 192.168.1.192/26", "10.0.0.0/24 and 10.0.1.0/24"], "192.168.1.0/25 covers .0–.127, which includes .64–.127.", 1),
+      Q("How many subnets do you get by borrowing 4 bits?", "16", ["8", "4", "32"], "2^4 = 16 subnets.", 1),
+      Q("What is the first usable host in 10.10.10.192/26?", "10.10.10.193", ["10.10.10.192", "10.10.10.191", "10.10.10.255"], "Network .192 + 1.", 1),
+      Q("A department of 100 users and future growth to 120. Which prefix fits best?", "/25 (126 hosts)", ["/26 (62 hosts)", "/24 (254 hosts)", "/27 (30 hosts)"], "/25 covers growth with minimal waste.", 1),
+      Q("Which address is the network address for 192.168.200.15/30?", "192.168.200.12", ["192.168.200.14", "192.168.200.0", "192.168.200.8"], "Block 4: 12 ≤ 15 < 16. (15 is the broadcast.)", 1),
+      Q("A router has 192.168.0.0/22 summarized to a neighbor. A packet for 192.168.4.10 arrives. Is it covered?", "No — the /22 covers 192.168.0.0–192.168.3.255", ["Yes", "Only if OSPF is used", "Only for broadcasts"], "The next /22 starts at 192.168.4.0.", 2),
+      Q("Which prefix leaves exactly 14 usable hosts?", "/28", ["/27", "/29", "/26"], "2^4 − 2 = 14.", 1),
+      Q("What is 255.255.255.128 as a prefix?", "/25", ["/24", "/26", "/23"], "One extra bit in the 4th octet.", 1),
+      T("How many usable hosts are in a /27? (number)", ["30"], "2^5 − 2 = 30.", 1, "number"),
+      T("Type the network address of 192.168.1.190/26.", ["192.168.1.128"], "Block 64: networks .0, .64, .128, .192.", 1, "x.x.x.x"),
+      T("Type the subnet mask for /22 in dotted decimal.", ["255.255.252.0"], "Third octet 11111100 = 252.", 1, "x.x.x.x"),
+      T("Summarize 172.16.8.0/24 through 172.16.15.0/24 as one network (address/prefix).", ["172.16.8.0/21"], "Eight contiguous /24s starting on a multiple of 8 = /21.", 2, "x.x.x.x/nn")
+    ] });
+})();
+
+;
+/* Net+ depth pack 2 — Exam core (s06–s10): ports, switching, routing, IPv6, wireless. */
+(function () {
+  var X = window.X, Q = window.Q, T = window.TYPE;
+
+  // ================= s06 ports & protocols =================
+  X.add('s06', { gateN: 20,
+    lesson: [{ h: 'Objective deep dive (1.4): ports, protocols and what replaces what', html:
+      '<table><tr><th>Insecure</th><th>Port</th><th>Secure replacement</th><th>Port</th></tr>' +
+      '<tr><td>Telnet</td><td>23</td><td>SSH</td><td>22</td></tr>' +
+      '<tr><td>FTP</td><td>20/21</td><td>SFTP (over SSH) / FTPS</td><td>22 / 989–990</td></tr>' +
+      '<tr><td>HTTP</td><td>80</td><td>HTTPS</td><td>443</td></tr>' +
+      '<tr><td>LDAP</td><td>389</td><td>LDAPS</td><td>636</td></tr>' +
+      '<tr><td>SNMPv1/v2c</td><td>161/162</td><td>SNMPv3 (auth + encryption)</td><td>161/162</td></tr>' +
+      '<tr><td>SMTP relay</td><td>25</td><td>SMTP submission with TLS</td><td>587 (465 implicit TLS)</td></tr>' +
+      '<tr><td>IMAP / POP3</td><td>143 / 110</td><td>IMAPS / POP3S</td><td>993 / 995</td></tr>' +
+      '<tr><td>Syslog</td><td>514 UDP</td><td>Syslog over TLS</td><td>6514</td></tr>' +
+      '<tr><td>DNS</td><td>53</td><td>DNS over TLS / HTTPS</td><td>853 / 443</td></tr></table>' +
+      '<ul><li>Also know: DHCP 67/68 UDP, TFTP 69 UDP, NTP 123 UDP, SMB 445, RDP 3389, SIP 5060/5061, MySQL 3306, MS SQL 1433, Kerberos 88, RADIUS 1812/1813, TACACS+ 49 TCP.</li>' +
+      '<li><b>IP protocol numbers</b> (not ports): ICMP 1, TCP 6, UDP 17, GRE 47, ESP 50, AH 51, OSPF 89.</li>' +
+      '<li>Ports 0–1023 are well-known, 1024–49151 registered, 49152–65535 dynamic/ephemeral (clients pick these as their source port).</li></ul>' }],
+    qs: [
+      Q("An administrator must replace Telnet for router management with an encrypted protocol. Which port will the new protocol use?", "22", ["23", "443", "3389"], "SSH on TCP 22.", 4),
+      Q("Which port does LDAPS use?", "636", ["389", "3268", "88"], "LDAP over TLS.", 1),
+      Q("Which protocol and port deliver email from a mail client to its server with STARTTLS?", "SMTP on 587", ["SMTP on 25", "IMAP on 143", "POP3 on 110"], "587 = submission; 25 = server-to-server relay.", 1),
+      Q("Which port retrieves email with IMAP over TLS?", "993", ["995", "143", "587"], "IMAPS 993, POP3S 995.", 1),
+      Q("Which protocol synchronizes clocks and uses UDP 123?", "NTP", ["SNMP", "TFTP", "Syslog"], "Accurate time matters for logs, certificates and Kerberos.", 1),
+      Q("Which port must be open for Windows Remote Desktop?", "3389", ["445", "22", "5900"], "RDP = TCP/UDP 3389.", 1),
+      Q("Windows file sharing (SMB) uses which port?", "445", ["139 only", "21", "2049"], "SMB over TCP 445 (NetBIOS 137–139 is legacy).", 1),
+      Q("A switch sends unsolicited alerts to the NMS. Which port does the NMS listen on?", "UDP 162", ["UDP 161", "TCP 514", "UDP 69"], "Traps go to 162; polling goes to the agent on 161.", 3),
+      Q("Which protocol transfers files with no authentication and is often used to upload device firmware?", "TFTP (UDP 69)", ["SFTP", "FTPS", "SCP"], "Trivial FTP — simple, insecure, UDP.", 1),
+      Q("Which port does SIP over TLS use?", "5061", ["5060", "5004", "443"], "SIP signaling: 5060 clear, 5061 TLS; media uses RTP.", 1),
+      Q("Which two ports does DHCP use?", "UDP 67 and 68", ["TCP 67 and 68", "UDP 53 and 54", "TCP 80 and 443"], "Server 67, client 68.", 1),
+      Q("A database connection to a Microsoft SQL Server uses which default port?", "1433", ["3306", "1521", "5432"], "MySQL 3306, Oracle 1521, PostgreSQL 5432.", 1),
+      Q("Which protocol and port are used for RADIUS authentication?", "UDP 1812", ["TCP 49", "UDP 1645 only", "TCP 88"], "RADIUS auth 1812, accounting 1813 (legacy 1645/1646).", 4),
+      Q("Which AAA protocol uses TCP 49 and encrypts the entire payload?", "TACACS+", ["RADIUS", "Kerberos", "LDAP"], "TACACS+ separates AAA functions; popular for device administration.", 4),
+      Q("DNS uses TCP 53 for which of these?", "Zone transfers and responses too large for UDP", ["All normal queries", "DHCP relay", "Nothing — DNS is UDP only"], "Queries are usually UDP; AXFR uses TCP.", 1),
+      Q("What is the IP protocol number for OSPF?", "89", ["6", "17", "50"], "OSPF runs directly on IP, not TCP/UDP.", 1),
+      Q("A firewall must allow IPsec ESP. Which IP protocol number?", "50", ["51", "47", "500"], "ESP = 50, AH = 51; IKE uses UDP 500.", 4),
+      Q("A GRE tunnel needs which IP protocol allowed?", "47", ["50", "17", "89"], "Generic Routing Encapsulation.", 2),
+      Q("IPsec through a NAT device uses which UDP port for NAT traversal?", "4500", ["500", "1701", "1723"], "NAT-T encapsulates ESP in UDP 4500.", 4),
+      Q("A client connects to a web server. Which source port will it most likely use?", "A random ephemeral port such as 51544", ["80", "443", "22"], "Clients use dynamic ports (49152–65535 on most systems).", 1),
+      Q("Which range is called 'well-known ports'?", "0–1023", ["1024–49151", "49152–65535", "1–65535"], "Assigned to common services.", 1),
+      Q("Which protocol is used to send log messages to a central collector by default over UDP 514?", "Syslog", ["SNMP", "NetFlow", "NTP"], "Use TLS (6514) for integrity and confidentiality.", 3),
+      Q("Which protocol should replace FTP when you need encryption and already run SSH?", "SFTP", ["TFTP", "FTP active mode", "HTTP"], "SFTP runs inside SSH on port 22.", 4),
+      Q("FTPS differs from SFTP because FTPS:", "Is FTP secured with TLS, while SFTP runs over SSH", ["Is unencrypted", "Uses UDP", "Is the same protocol"], "Different protocols, similar names.", 1),
+      Q("Which protocol does Kerberos use and on which port?", "TCP/UDP 88", ["TCP 389", "UDP 1812", "TCP 443"], "Kerberos authenticates in Active Directory.", 4),
+      Q("Which service listens on TCP 3306 by default?", "MySQL", ["MS SQL", "RDP", "Oracle"], "MySQL/MariaDB.", 1),
+      Q("A help desk tech uses VNC for remote support. Which default port?", "5900", ["3389", "22", "23"], "VNC uses 5900+display number.", 1),
+      Q("Which protocol queries a directory to look up users and groups?", "LDAP", ["SMTP", "SNMP", "TFTP"], "Lightweight Directory Access Protocol, TCP/UDP 389.", 1),
+      Q("A secure DNS option that sends queries inside HTTPS uses which port?", "443", ["53", "853", "5353"], "DoH = 443; DoT = 853.", 4),
+      Q("Which protocol provides auto-discovery of neighbors on Cisco and multi-vendor switches?", "CDP / LLDP", ["ARP", "DNS", "NTP"], "CDP (Cisco) and LLDP (IEEE 802.1AB) advertise device info.", 3),
+      Q("Which statement about SNMPv3 is correct?", "It adds authentication and encryption", ["It uses community strings only", "It runs on TCP 23", "It cannot send traps"], "Use authPriv in production.", 4),
+      Q("A web server must accept HTTP and HTTPS. Which two ports?", "80 and 443", ["8080 and 22", "21 and 443", "80 and 8443 only"], "Standard web ports.", 1),
+      Q("Which protocol and port does POP3 use without encryption?", "TCP 110", ["TCP 143", "TCP 995", "UDP 110"], "POP3S = 995.", 1),
+      Q("An RTP voice stream uses which transport protocol?", "UDP", ["TCP", "ICMP", "GRE"], "Real-time media over UDP; signaling via SIP.", 1),
+      T("Type the port number for HTTPS.", ["443"], "TCP 443 (HTTP/3 uses UDP 443).", 1, "port"),
+      T("Type the port that SNMP agents listen on for polling.", ["161"], "UDP 161 (traps: 162).", 1, "port"),
+      T("Type the IP protocol number for ICMP.", ["1"], "ICMP = 1, TCP = 6, UDP = 17.", 1, "number")
+    ] });
+
+  // ================= s07 switching =================
+  X.add('s07', { gateN: 20,
+    lesson: [{ h: 'Objective deep dive (2.2): switching features you configure', html:
+      '<ul><li><b>VLANs</b> create separate broadcast domains on one switch. <b>Access ports</b> carry one untagged VLAN; <b>trunks</b> carry many VLANs tagged with <b>802.1Q</b> (a 4-byte tag with a 12-bit VLAN ID, 1–4094). The <b>native VLAN</b> is untagged on a trunk — it must match on both ends and should not be VLAN 1.</li>' +
+      '<li><b>Voice VLAN</b>: an access port can also carry a tagged voice VLAN for an IP phone, with the PC behind the phone on the data VLAN.</li>' +
+      '<li><b>STP (802.1D) / RSTP (802.1w)</b> prevents Layer 2 loops: elect a <b>root bridge</b> (lowest bridge ID = priority + MAC), each switch picks a <b>root port</b>, each segment a <b>designated port</b>, everything else <b>blocks</b>. Port states (classic): blocking → listening → learning → forwarding. Set the root deliberately by lowering priority (default 32768, increments of 4096).</li>' +
+      '<li>Protections: <b>PortFast</b> (edge ports skip to forwarding), <b>BPDU Guard</b> (err-disable an edge port that receives BPDUs), <b>Root Guard</b>, <b>storm control</b>, <b>port security</b> (limit MACs; violation modes protect/restrict/shutdown), <b>DHCP snooping</b> and <b>Dynamic ARP Inspection</b>.</li>' +
+      '<li><b>Link aggregation (LACP 802.3ad/802.1AX)</b> bundles links into one logical port-channel for bandwidth and redundancy; settings must match on all members.</li>' +
+      '<li><b>MTU / jumbo frames</b> (9000 bytes) for storage networks must be set end to end. <b>Port mirroring (SPAN)</b> copies traffic to an analyzer.</li></ul>' }],
+    qs: [
+      Q("How many bits form the VLAN ID in an 802.1Q tag?", "12", ["8", "16", "32"], "12 bits → 4096 values (1–4094 usable).", 2),
+      Q("Which port type carries traffic for many VLANs between switches?", "Trunk", ["Access", "Console", "Edge"], "Trunks tag frames with 802.1Q.", 2),
+      Q("Frames on the native VLAN of a trunk are:", "Sent untagged", ["Encrypted", "Dropped", "Tagged twice"], "Native VLAN mismatches cause traffic to leak between VLANs.", 2),
+      Q("Switches log 'native VLAN mismatch' on a trunk. What should you do?", "Set the same native VLAN on both ends", ["Disable STP", "Enable PortFast", "Change the duplex"], "Both trunk ends must agree on the untagged VLAN.", 5),
+      Q("A desk has an IP phone with a PC plugged into it. How is the switch port configured?", "Access port with a data VLAN plus a voice VLAN", ["Trunk with all VLANs", "Two separate ports are required", "Native VLAN 1 only"], "The phone tags voice traffic; the PC's traffic stays untagged on the data VLAN.", 2),
+      Q("Which switch becomes the STP root bridge?", "The one with the lowest bridge ID (priority, then MAC)", ["The one with the most ports", "The newest switch", "The one with the highest IP"], "Lower priority wins; ties go to the lowest MAC.", 2),
+      Q("What is the default STP bridge priority?", "32768", ["0", "4096", "65535"], "Set the intended root to 4096 or 0 (multiples of 4096).", 2),
+      Q("Which STP port role is the best path toward the root bridge on a non-root switch?", "Root port", ["Designated port", "Alternate port", "Backup port"], "Every non-root switch has exactly one root port.", 2),
+      Q("Which standard is Rapid Spanning Tree?", "802.1w", ["802.1D", "802.1Q", "802.3ad"], "RSTP converges in seconds instead of 30–50.", 2),
+      Q("A port connected to a user's PC should skip STP listening/learning. Configure:", "PortFast", ["Root Guard", "Trunk mode", "LACP"], "Edge ports go straight to forwarding.", 2),
+      Q("A user plugs a home switch into an office jack and the port shuts down. Which feature did that?", "BPDU Guard", ["PortFast", "Storm control", "DHCP snooping"], "BPDU Guard err-disables edge ports that receive BPDUs.", 4),
+      Q("Which feature limits a port to one learned MAC and shuts it down if a second appears?", "Port security", ["LACP", "802.1Q", "Storm control"], "Violation modes: protect, restrict, shutdown.", 4),
+      Q("A broadcast storm brings down the LAN after someone loops two wall jacks with a cable. Which protocol should have prevented it?", "Spanning Tree Protocol", ["OSPF", "LACP", "VTP"], "STP blocks redundant L2 paths.", 5),
+      Q("Which symptoms point to a Layer 2 loop?", "Very high CPU on switches, MAC flapping, and a broadcast storm", ["APIPA addresses only", "DNS timeouts only", "One slow web page"], "Frames circulate endlessly with no TTL at Layer 2.", 5),
+      Q("Which protocol bundles four 1 Gbps links into one logical link?", "LACP (802.3ad)", ["STP", "VRRP", "PoE"], "Link aggregation = EtherChannel / port-channel / bond.", 2),
+      Q("A port-channel will not form. Member ports have different speeds. Fix?", "Make speed, duplex and VLAN settings identical on all members", ["Enable BPDU filter", "Change the IP address", "Use a hub"], "Members must match.", 5),
+      Q("Which feature copies traffic from one port to another for packet capture?", "Port mirroring (SPAN)", ["Port security", "PortFast", "Trunking"], "Send copies to a Wireshark host or IDS.", 3),
+      Q("Which feature blocks rogue DHCP servers on user ports?", "DHCP snooping", ["Storm control", "BPDU Guard", "LLDP"], "Only trusted ports may send DHCP offers.", 4),
+      Q("Dynamic ARP Inspection relies on which other feature's database?", "DHCP snooping binding table", ["STP topology", "LACP", "MAC flapping logs"], "DAI checks ARP replies against IP-to-MAC bindings.", 4),
+      Q("Storage traffic needs 9000-byte frames. What must be true?", "Jumbo frames enabled on every device in the path", ["Only on the server", "Only on the storage array", "Nothing; switches fragment frames"], "Ethernet switches do not fragment; mismatches drop giants.", 2),
+      Q("What happens when a switch receives a frame for an unknown destination MAC?", "It floods the frame out all ports in that VLAN except the one it came in", ["It drops it", "It sends it to the router only", "It replies with ARP"], "Unknown unicast flooding.", 1),
+      Q("How does a switch learn MAC addresses?", "From the source MAC of frames arriving on each port", ["From DHCP", "From DNS", "From the destination MAC"], "It records source MAC → port in the CAM table.", 1),
+      Q("A MAC table is full because an attacker floods random MACs, so the switch floods all frames. This attack is:", "MAC flooding", ["VLAN hopping", "ARP poisoning", "DNS poisoning"], "Port security limits MACs per port.", 4),
+      Q("Which attack abuses a trunk-negotiation feature or double tagging to reach another VLAN?", "VLAN hopping", ["MAC flooding", "Evil twin", "Smurf"], "Disable DTP, set access ports explicitly, and avoid native VLAN 1.", 4),
+      Q("Which command style best prevents VLAN hopping on user ports?", "Hard-code switchport mode access and disable trunk negotiation", ["Enable dynamic desirable", "Use VLAN 1 for users", "Enable PortFast on trunks"], "Never leave user ports negotiating trunks.", 4),
+      Q("Which feature limits broadcast traffic to a percentage of port bandwidth?", "Storm control", ["PortFast", "STP", "SPAN"], "Prevents a storm from saturating the network.", 4),
+      Q("Which RSTP role is a backup path to the root that is currently discarding?", "Alternate port", ["Root port", "Designated port", "Edge port"], "It takes over quickly if the root port fails.", 2),
+      Q("Unused switch ports should be:", "Shut down and placed in an unused VLAN", ["Left enabled in VLAN 1", "Configured as trunks", "Given PoE+"], "Basic hardening.", 4),
+      Q("Which VLAN should management traffic use?", "A dedicated management VLAN (not VLAN 1)", ["VLAN 1", "The guest VLAN", "The voice VLAN"], "Isolate device management.", 4),
+      Q("What is the purpose of VTP (or similar VLAN propagation)?", "Distribute VLAN definitions from one switch to others", ["Prevent loops", "Bundle links", "Encrypt trunks"], "Misused VTP can wipe VLANs — many shops run it in transparent mode.", 2),
+      Q("A host in VLAN 10 cannot reach a host in VLAN 20 on the same switch. Why?", "VLANs are separate broadcast domains; routing is required", ["The cable is bad", "STP is blocking", "Duplex mismatch"], "Use a router or L3 switch (SVIs).", 5),
+      Q("Which IEEE standard defines LLDP?", "802.1AB", ["802.1X", "802.1Q", "802.3af"], "Link Layer Discovery Protocol.", 3),
+      T("Type the IEEE standard for VLAN tagging (802.1_).", [/^(802\.1)?q$/i], "802.1Q.", 2, "802.1..."),
+      T("Type the default STP bridge priority.", ["32768"], "32768 (+ VLAN ID with extended system ID).", 2, "number")
+    ] });
+
+  // ================= s08 routing =================
+  X.add('s08', { gateN: 20,
+    lesson: [{ h: 'Objective deep dive (2.1): how a router really chooses a path', html:
+      '<ol><li><b>Longest prefix match</b> first: a /28 route beats a /24, which beats the 0.0.0.0/0 default.</li><li>If two sources offer the same prefix, the lower <b>administrative distance</b> wins: connected 0, static 1, eBGP 20, EIGRP 90, OSPF 110, RIP 120, iBGP 200.</li><li>Within one protocol, the lowest <b>metric</b> wins (OSPF cost from bandwidth, RIP hop count with max 15, BGP path attributes).</li></ol>' +
+      '<table><tr><th>Protocol</th><th>Type</th><th>Notes</th></tr><tr><td>RIPv2</td><td>Distance vector</td><td>Hop count, max 15, slow convergence</td></tr><tr><td>OSPF</td><td>Link state</td><td>Areas (area 0 backbone), cost, fast convergence, open standard</td></tr><tr><td>EIGRP</td><td>Advanced distance vector (hybrid)</td><td>Cisco origin, fast, feasible successors</td></tr><tr><td>BGP</td><td>Path vector</td><td>The Internet\'s routing protocol, between autonomous systems</td></tr></table>' +
+      '<ul><li><b>Static routes</b> are simple and predictable; a <b>floating static</b> route has a higher AD so it is used only when the dynamic route disappears.</li><li><b>NAT</b>: static NAT (1:1), dynamic NAT (pool), PAT/overload (many-to-one with ports). Inside local/global, outside local/global terms describe addresses before and after translation.</li><li><b>Inter-VLAN routing</b>: router-on-a-stick (one trunk with subinterfaces, <code>encapsulation dot1Q 10</code>) or an L3 switch with SVIs.</li><li><b>FHRP</b> — VRRP (open), HSRP (Cisco), GLBP — gives hosts a virtual default gateway that survives a router failure.</li></ul>' }],
+    qs: [
+      Q("A router has routes for 10.1.0.0/16 and 10.1.5.0/24. A packet arrives for 10.1.5.9. Which route is used?", "10.1.5.0/24 — longest prefix match", ["10.1.0.0/16 — it was learned first", "The default route", "Both, load balanced"], "The most specific matching prefix always wins.", 2),
+      Q("Which administrative distance does OSPF have by default?", "110", ["90", "120", "1"], "Lower AD is more trusted.", 2),
+      Q("A route to the same network is learned from OSPF and EIGRP. Which is installed?", "EIGRP (AD 90)", ["OSPF (AD 110)", "Both", "Neither"], "Lower administrative distance wins for identical prefixes.", 2),
+      Q("Which route has an administrative distance of 0?", "Directly connected", ["Static", "OSPF", "eBGP"], "Connected networks are fully trusted.", 2),
+      Q("What is the purpose of a floating static route?", "A backup route with a higher AD that is used only when the primary route disappears", ["A route that moves between interfaces", "A default route for IPv6 only", "A multicast route"], "Set AD above the dynamic protocol's.", 2),
+      Q("Which routing protocol uses hop count with a maximum of 15?", "RIP", ["OSPF", "EIGRP", "BGP"], "16 hops = unreachable.", 2),
+      Q("Which routing protocol is used between ISPs on the Internet?", "BGP", ["OSPF", "RIP", "EIGRP"], "Border Gateway Protocol — path vector between autonomous systems.", 2),
+      Q("In OSPF, every area must connect to:", "Area 0 (the backbone)", ["Area 1", "The default route", "A BGP router"], "Multi-area OSPF hinges on area 0.", 2),
+      Q("OSPF neighbors will not form adjacency. Which mismatch is a common cause?", "Different hello/dead timers or area IDs", ["Different hostnames", "Different SNMP communities", "Different NTP servers"], "Timers, area, subnet, authentication and MTU must match.", 5),
+      Q("Which type of protocol is OSPF?", "Link state", ["Distance vector", "Path vector", "Static"], "Routers share link-state advertisements and run SPF (Dijkstra).", 2),
+      Q("Which NAT type maps one inside address permanently to one public address (for a server)?", "Static NAT", ["PAT", "Dynamic NAT", "APIPA"], "1:1 mapping, often with port forwarding.", 2),
+      Q("Hundreds of users share one public IP. Which feature?", "PAT (NAT overload)", ["Static NAT", "Dynamic NAT with a pool of 2", "ARP proxy"], "Translations are tracked by source port.", 2),
+      Q("In router-on-a-stick, what is configured on the router?", "Subinterfaces with 802.1Q encapsulation, one per VLAN", ["One IP on the physical interface only", "Spanning tree", "A VLAN database"], "e.g. interface g0/0.10 / encapsulation dot1Q 10 / ip address …", 2),
+      Q("On an L3 switch, the gateway for VLAN 20 is configured as:", "An SVI (interface vlan 20) with an IP address", ["A trunk port", "A static ARP entry", "A crossover cable"], "Remember to enable ip routing.", 2),
+      Q("Which protocol provides a virtual default gateway shared by two routers as an open standard?", "VRRP", ["HSRP", "GLBP", "LACP"], "HSRP and GLBP are Cisco-originated.", 2),
+      Q("Hosts lose Internet when the single gateway router reboots. What would prevent this?", "An FHRP such as VRRP or HSRP with a second router", ["A bigger subnet", "More DHCP scopes", "STP PortFast"], "Hosts keep the same virtual gateway IP.", 3),
+      Q("A router receives a packet that matches no route and there is no default route. What happens?", "It drops the packet and may send ICMP Destination Unreachable", ["It floods it", "It sends it back to the source", "It broadcasts it"], "Routers do not guess.", 2),
+      Q("Which command shows the routing table on most Cisco devices?", "show ip route", ["show vlan brief", "show mac address-table", "show interfaces trunk"], "Linux: ip route; Windows: route print.", 5),
+      Q("A traceroute shows the same two routers repeating until the TTL expires. What is it?", "A routing loop", ["A switching loop", "DNS failure", "Asymmetric routing"], "Fix the misconfigured routes.", 5),
+      Q("Which BGP attribute list makes it a path vector protocol?", "AS_PATH", ["Hop count", "Cost", "Bandwidth"], "BGP prevents loops by rejecting routes containing its own AS.", 2),
+      Q("Which statement about static routes is true?", "They do not adapt automatically to failures", ["They use more CPU than OSPF", "They are learned from neighbors", "They have AD 110"], "Simple and predictable, but manual.", 2),
+      Q("Which route summarization benefit matters most in large networks?", "Smaller routing tables and fewer updates when links flap", ["More broadcasts", "Longer TTL", "Faster DNS"], "Summaries hide internal instability.", 2),
+      Q("A packet from 10.0.0.5 leaves a PAT router as 203.0.113.9:40123. 203.0.113.9 is the:", "Inside global address", ["Inside local address", "Outside local address", "Loopback"], "Inside local = private; inside global = translated public.", 2),
+      Q("What does 'ECMP' mean in routing?", "Equal-cost multipath — load sharing across several routes with the same metric", ["Error checking for multicast packets", "Encrypted control messages", "An IPv6 feature only"], "Common in data centers and OSPF.", 2),
+      Q("Which protocol is an advanced distance-vector protocol using feasible successors?", "EIGRP", ["RIP", "OSPF", "IS-IS"], "Fast convergence with backup paths precomputed.", 2),
+      Q("Port forwarding TCP 443 on the firewall to an internal web server is a form of:", "Static NAT/PAT (destination NAT)", ["Dynamic NAT", "Proxy ARP", "APIPA"], "Inbound connections are translated to the internal host.", 2),
+      Q("A default route on a branch router should point to:", "The next-hop toward the WAN/ISP", ["The local LAN switch", "The DHCP server", "The loopback interface"], "0.0.0.0/0 via the upstream router.", 2),
+      Q("Which IPv4 header field do routers decrement?", "TTL", ["Checksum only", "Source IP", "Protocol"], "And recompute the checksum.", 1),
+      Q("Which routing is likely to cause stateful firewall drops?", "Asymmetric routing (return traffic takes a different path)", ["Static routing", "Longest prefix match", "Summarization"], "The firewall never saw the original connection.", 5),
+      Q("A route learned via eBGP has AD:", "20", ["200", "110", "90"], "eBGP 20, iBGP 200.", 2),
+      T("Type the administrative distance of a static route.", ["1"], "Static = 1 (connected = 0).", 2, "number"),
+      T("Which OSPF area number is the backbone? (number)", ["0", "0.0.0.0"], "Area 0.", 2, "number")
+    ] });
+
+  // ================= s09 IPv6 =================
+  X.add('s09', { gateN: 18,
+    lesson: [{ h: 'Objective deep dive (1.8): IPv6 address types and how hosts configure', html:
+      '<table><tr><th>Prefix</th><th>Type</th></tr><tr><td>2000::/3</td><td>Global unicast (public)</td></tr><tr><td>fc00::/7 (fd00::/8 in practice)</td><td>Unique local (private-like)</td></tr><tr><td>fe80::/10</td><td>Link-local — every interface has one; never routed</td></tr><tr><td>ff00::/8</td><td>Multicast (ff02::1 all nodes, ff02::2 all routers)</td></tr><tr><td>::1/128</td><td>Loopback</td></tr><tr><td>::/128</td><td>Unspecified</td></tr></table>' +
+      '<ul><li>128 bits, eight hextets. Shorten by dropping <b>leading zeros</b> in each hextet and replacing the <b>longest</b> run of all-zero hextets with <code>::</code> <b>once</b>.</li><li>Typical LAN = <b>/64</b> (64 bits network, 64 bits interface ID). Sites often get a /48 or /56.</li><li><b>SLAAC</b>: host learns the prefix from a Router Advertisement (ICMPv6 RA) and builds its own interface ID (EUI-64 from the MAC, or random/privacy). <b>DHCPv6</b> stateful assigns addresses; stateless DHCPv6 adds DNS info to SLAAC.</li><li><b>NDP</b> (ICMPv6) replaces ARP: Router Solicitation/Advertisement, Neighbor Solicitation/Advertisement, Redirect. <b>DAD</b> checks for duplicate addresses.</li><li>Transition: <b>dual stack</b> (both protocols), <b>tunneling</b> (6to4, ISATAP, GRE), <b>NAT64/DNS64</b> for IPv6-only clients reaching IPv4 servers.</li><li>No broadcast, no NAT needed, simplified header with a <b>flow label</b>; fragmentation is done only by the source.</li></ul>' }],
+    qs: [
+      Q("Which prefix identifies IPv6 link-local addresses?", "fe80::/10", ["fc00::/7", "2000::/3", "ff00::/8"], "Automatically on every IPv6 interface.", 1),
+      Q("Which is the IPv6 loopback address?", "::1", ["::", "fe80::1", "127.0.0.1"], "::1/128.", 1),
+      Q("Which shortened form of 2001:0db8:0000:0000:0000:0000:0000:0001 is valid?", "2001:db8::1", ["2001:db8:::1", "2001:db8::0:::1", "21:db8::1"], "Drop leading zeros, one :: for the zero run.", 1),
+      Q("Why is 2001:db8::5::9 invalid?", ":: may appear only once", ["Hex cannot contain 'db'", "It is too short", "It has no prefix"], "Otherwise the address would be ambiguous.", 1),
+      Q("Which IPv6 range is similar to RFC 1918 private addressing?", "Unique local fd00::/8", ["Link-local fe80::/10", "Global 2000::/3", "Multicast ff00::/8"], "ULAs are routable inside an organization only.", 1),
+      Q("Which multicast address reaches all nodes on the local link?", "ff02::1", ["ff02::2", "ff05::1:3", "fe80::1"], "ff02::2 = all routers.", 1),
+      Q("Which mechanism lets a host build its own global address from a Router Advertisement?", "SLAAC", ["APIPA", "DHCPv4", "ARP"], "Stateless Address Autoconfiguration.", 1),
+      Q("Which ICMPv6 message do routers send to announce the network prefix?", "Router Advertisement (RA)", ["Neighbor Solicitation", "Echo Reply", "Redirect"], "Hosts can request one with a Router Solicitation.", 1),
+      Q("Which process checks that no other host already uses an IPv6 address?", "Duplicate Address Detection (DAD)", ["Proxy ARP", "Gratuitous DHCP", "Route poisoning"], "Uses Neighbor Solicitation to the solicited-node multicast address.", 1),
+      Q("How long is the interface ID in a standard IPv6 /64 subnet?", "64 bits", ["48 bits", "32 bits", "80 bits"], "EUI-64 expands a 48-bit MAC by inserting fffe and flipping the U/L bit.", 1),
+      Q("EUI-64 inserts which value into the middle of the MAC address?", "fffe", ["ffff", "0000", "fe80"], "And flips the 7th bit of the first byte.", 1),
+      Q("Which transition method runs IPv4 and IPv6 at the same time on each device?", "Dual stack", ["NAT64", "6to4 tunneling", "ISATAP"], "The most common migration approach.", 1),
+      Q("IPv6-only clients need to reach an IPv4-only website. Which combination?", "NAT64 with DNS64", ["Dual stack on the clients", "SLAAC", "Link-local addressing"], "DNS64 synthesizes AAAA records; NAT64 translates.", 1),
+      Q("How many bits is an IPv6 address?", "128", ["64", "48", "32"], "Eight 16-bit hextets.", 1),
+      Q("Which IPv6 feature replaces ARP?", "Neighbor Discovery (ICMPv6 NS/NA)", ["DHCPv6", "MLD", "RIPng"], "NDP also handles router discovery and redirects.", 1),
+      Q("A host has only an fe80:: address and cannot reach other subnets. Likely cause?", "It did not receive a Router Advertisement or DHCPv6 configuration", ["DNS is down", "The MAC is duplicated", "IPv6 does not route"], "Link-local only works on the link.", 5),
+      Q("Which DNS record type holds an IPv6 address?", "AAAA", ["A", "PTR", "MX"], "A = IPv4.", 1),
+      Q("What does an IPv6 /48 given to a site allow?", "65,536 /64 subnets", ["256 subnets", "48 hosts", "One subnet only"], "2^(64−48) = 65,536.", 1),
+      Q("Which IPv6 header field helps routers handle packets of the same flow consistently?", "Flow label", ["TTL", "Checksum", "Fragment offset"], "IPv6 has no header checksum; hop limit replaces TTL.", 1),
+      Q("In IPv6, who fragments packets that are too large?", "Only the source host (using Path MTU discovery)", ["Every router", "The destination", "Switches"], "Routers send ICMPv6 Packet Too Big instead — do not block it!", 1),
+      Q("Which compressed address is the unspecified address?", "::", ["::1", "ff02::", "fe80::"], "All zeros; used before a host has an address.", 1),
+      Q("A firewall blocks all ICMPv6. What breaks?", "Neighbor discovery, router advertisements and path MTU discovery", ["Nothing", "Only ping", "Only DNS"], "ICMPv6 is essential to IPv6 operation.", 4),
+      Q("Which DHCPv6 mode gives DNS server information while addresses come from SLAAC?", "Stateless DHCPv6", ["Stateful DHCPv6", "DHCPv4", "Relay only"], "RA flags tell hosts which method to use (M and O flags).", 1),
+      Q("Expand 2001:db8:a::1 to show all eight hextets.", "2001:0db8:000a:0000:0000:0000:0000:0001", ["2001:0db8:a000:0000:0000:0000:0000:1000", "2001:0db8:000a:0001:0000:0000:0000:0000", "2001:db8:a:1:0:0:0:0"], ":: replaces four zero hextets here (3 + 4 + 1 = 8).", 1),
+      Q("Which prefix identifies global unicast addresses?", "2000::/3", ["fe80::/10", "ff00::/8", "fd00::/8"], "Addresses starting with 2 or 3.", 1),
+      T("Type the shortest form of 2001:0db8:0000:0000:0000:ff00:0042:8329.", ["2001:db8::ff00:42:8329"], "Drop leading zeros and compress the zero run.", 1, "compressed"),
+      T("Type the DNS record type that stores IPv6 addresses.", ["AAAA"], "Quad-A.", 1, "record")
+    ] });
+
+  // ================= s10 wireless =================
+  X.add('s10', { gateN: 20,
+    lesson: [{ h: 'Objective deep dive (2.3): designing and securing Wi-Fi', html:
+      '<table><tr><th>Standard</th><th>Name</th><th>Band</th><th>Max (theoretical)</th></tr><tr><td>802.11a</td><td>—</td><td>5 GHz</td><td>54 Mbps</td></tr><tr><td>802.11b/g</td><td>—</td><td>2.4 GHz</td><td>11 / 54 Mbps</td></tr><tr><td>802.11n</td><td>Wi-Fi 4</td><td>2.4 + 5</td><td>600 Mbps</td></tr><tr><td>802.11ac</td><td>Wi-Fi 5</td><td>5</td><td>~6.9 Gbps</td></tr><tr><td>802.11ax</td><td>Wi-Fi 6 / 6E</td><td>2.4 + 5 (+6 GHz for 6E)</td><td>~9.6 Gbps</td></tr><tr><td>802.11be</td><td>Wi-Fi 7</td><td>2.4 + 5 + 6</td><td>~46 Gbps</td></tr></table>' +
+      '<ul><li>2.4 GHz: longer range, more interference, only <b>3 non-overlapping channels (1, 6, 11)</b> in the US. 5 GHz: many channels, shorter range; some are <b>DFS</b> (must avoid radar). 6 GHz: clean spectrum, WPA3 required.</li><li><b>Channel width</b> 20/40/80/160 MHz — wider is faster but leaves fewer non-overlapping channels; use 20 MHz on 2.4 and 20–40 MHz in dense offices.</li><li>Security: WEP (broken) → WPA (TKIP, deprecated) → <b>WPA2</b> (AES-CCMP) → <b>WPA3</b> (SAE replaces PSK handshake, protected management frames). <b>Personal</b> = pre-shared key; <b>Enterprise</b> = 802.1X with RADIUS (EAP-TLS strongest, PEAP common).</li><li>Design: site survey and heat maps, overlap cells ~15–20% for roaming, adjust <b>transmit power</b> rather than always maxing it, and place APs to avoid co-channel interference.</li><li>Problems: interference (microwaves, Bluetooth on 2.4), <b>channel overlap</b>, <b>co-channel</b> congestion, low RSSI (below about −70 dBm for data, −67 dBm for voice), <b>sticky clients</b>, wrong passphrase, captive-portal issues.</li><li>Attacks to recognize: rogue AP, evil twin, deauthentication, war driving.</li></ul>' }],
+    qs: [
+      Q("Which three 2.4 GHz channels do not overlap in North America?", "1, 6 and 11", ["1, 5 and 9", "2, 7 and 12", "36, 40 and 44"], "Channels are 5 MHz apart but 20–22 MHz wide.", 2),
+      Q("Which Wi-Fi generation added the 6 GHz band?", "Wi-Fi 6E", ["Wi-Fi 5", "Wi-Fi 4", "802.11g"], "6E = 802.11ax extended into 6 GHz.", 2),
+      Q("802.11ac operates in which band?", "5 GHz only", ["2.4 GHz only", "2.4 and 5 GHz", "6 GHz"], "Wi-Fi 5 is 5 GHz.", 2),
+      Q("Which security protocol replaces the PSK four-way handshake with SAE?", "WPA3", ["WPA2", "WEP", "TKIP"], "Simultaneous Authentication of Equals resists offline dictionary attacks.", 4),
+      Q("A company wants each user to authenticate to Wi-Fi with their own credentials. Which mode?", "WPA2/WPA3-Enterprise with 802.1X and RADIUS", ["WPA2-Personal", "Open with MAC filtering", "WEP"], "Enterprise mode = per-user authentication.", 4),
+      Q("Which EAP method uses certificates on both client and server and is considered strongest?", "EAP-TLS", ["PEAP-MSCHAPv2", "EAP-MD5", "LEAP"], "Mutual certificate authentication.", 4),
+      Q("Users near the break room lose Wi-Fi at lunchtime on 2.4 GHz. Likely cause?", "Microwave oven interference", ["DHCP exhaustion", "Wrong VLAN", "DNS failure"], "Microwaves emit around 2.45 GHz.", 5),
+      Q("Two neighboring APs both use channel 6 on 2.4 GHz and clients see slow speeds. This is:", "Co-channel interference / contention", ["Adjacent-channel attenuation", "Jitter only", "A rogue AP"], "Re-plan channels (1/6/11) and lower power.", 5),
+      Q("A client stays connected to a distant AP with weak signal even though a closer AP exists. This is a:", "Sticky client", ["Rogue AP", "Evil twin", "Deauth attack"], "Tune minimum RSSI, enable 802.11k/v/r roaming help.", 5),
+      Q("Which RSSI value indicates the strongest signal?", "−45 dBm", ["−70 dBm", "−85 dBm", "−95 dBm"], "Closer to 0 is stronger.", 5),
+      Q("Which 5 GHz feature requires APs to move off channels when radar is detected?", "DFS", ["MIMO", "Beamforming", "Band steering"], "Dynamic Frequency Selection.", 2),
+      Q("Why choose 20 MHz channels in a dense office on 5 GHz instead of 80 MHz?", "More non-overlapping channels and less interference between APs", ["Higher top speed per client", "Longer range", "WPA3 requires it"], "Wider channels trade capacity for per-client speed.", 2),
+      Q("Which technology uses multiple antennas to send several spatial streams?", "MIMO", ["DFS", "WPS", "SSID cloaking"], "MU-MIMO serves several clients at once.", 2),
+      Q("Which Wi-Fi 6 feature splits a channel into resource units for many clients at once?", "OFDMA", ["CSMA/CD", "DSSS", "WEP"], "Improves efficiency in dense environments.", 2),
+      Q("An unauthorized AP is plugged into an office network jack by an employee. This is a:", "Rogue AP", ["Evil twin", "Mesh AP", "Controller"], "Detect with wireless IPS and NAC.", 4),
+      Q("An attacker broadcasts the same SSID as the company to lure users. This is an:", "Evil twin", ["Rogue AP placed by staff", "Deauth flood only", "Bluejacking"], "Enterprise auth with server certificate validation helps.", 4),
+      Q("Which feature should be disabled because its PIN method is easily brute-forced?", "WPS", ["WPA3", "802.1X", "PMF"], "Wi-Fi Protected Setup PIN is weak.", 4),
+      Q("Hiding the SSID provides:", "Very little security — it is still discoverable", ["Strong encryption", "802.1X authentication", "Guaranteed privacy"], "Use proper encryption instead.", 4),
+      Q("Which antenna is best for a point-to-point link between two buildings?", "Directional (Yagi or parabolic)", ["Omnidirectional", "Dipole indoor", "Isotropic"], "High gain in one direction.", 2),
+      Q("Which tool produces a heat map of wireless coverage during a site survey?", "Wi-Fi analyzer / survey software", ["Toner probe", "OTDR", "Multimeter"], "Predictive and active surveys plan AP placement.", 5),
+      Q("Guests should get Internet only, after accepting terms on a web page. Implement:", "A guest SSID on an isolated VLAN with a captive portal", ["The corporate SSID with a shared key", "WEP", "MAC filtering"], "Isolate guests from internal resources.", 4),
+      Q("Which IEEE amendments help clients roam faster between APs?", "802.11k, 802.11v and 802.11r", ["802.11a, b, g", "802.3af and at", "802.1Q and 802.1X"], "Neighbor reports, BSS transition, fast BSS transition.", 2),
+      Q("Which band generally penetrates walls best?", "2.4 GHz", ["5 GHz", "6 GHz", "60 GHz"], "Lower frequency = better range and penetration.", 2),
+      Q("Clients connect to Wi-Fi but receive 169.254.x.x addresses. Where should you look first?", "DHCP for the wireless VLAN (scope exhausted or not reachable)", ["The SSID name", "The antenna type", "The channel width"], "Association works; addressing does not.", 5),
+      Q("A wireless network for a warehouse with 2,000 scanners favors which design?", "Many APs at moderate power for capacity", ["One high-power AP in the center", "Ad hoc mode", "Only 2.4 GHz at maximum power"], "Capacity planning beats coverage-only planning.", 2),
+      Q("Which management frame protection is mandatory in WPA3?", "Protected Management Frames (802.11w)", ["WPS", "TKIP", "LEAP"], "Prevents spoofed deauthentication frames.", 4),
+      Q("Which Wi-Fi standard is Wi-Fi 7?", "802.11be", ["802.11ax", "802.11ac", "802.11ad"], "Adds 320 MHz channels and multi-link operation.", 2),
+      T("Type the IEEE standard for Wi-Fi 6 (802.11__).", [/^(802\.11)?ax$/i], "802.11ax.", 2, "802.11.."),
+      T("Type the authentication framework used by WPA2/WPA3-Enterprise (802.1_).", [/^(802\.1)?x$/i], "802.1X.", 4, "802.1.")
+    ] });
+})();
+
+;
+/* Net+ depth pack 3 — Services, operations, security, troubleshooting (s11–s14). */
+(function () {
+  var X = window.X, Q = window.Q, T = window.TYPE;
+
+  // ================= s11 DNS/DHCP/cloud =================
+  X.add('s11', { gateN: 20,
+    lesson: [{ h: 'Objective deep dive (1.6, 3.1): DNS records, DHCP, and cloud models', html:
+      '<table><tr><th>Record</th><th>Purpose</th></tr><tr><td>A / AAAA</td><td>Name → IPv4 / IPv6</td></tr><tr><td>PTR</td><td>IP → name (reverse lookup)</td></tr><tr><td>CNAME</td><td>Alias one name to another</td></tr><tr><td>MX</td><td>Mail server for a domain (with priority)</td></tr><tr><td>NS</td><td>Authoritative name servers for a zone</td></tr><tr><td>SOA</td><td>Zone authority, serial number, timers</td></tr><tr><td>TXT</td><td>SPF, DKIM, DMARC, domain verification</td></tr><tr><td>SRV</td><td>Service location (e.g. SIP, LDAP, AD)</td></tr></table>' +
+      '<ul><li><b>DHCP DORA</b>: Discover → Offer → Request → Acknowledge. A <b>relay/IP helper</b> forwards broadcasts to a DHCP server on another subnet. <b>Reservations</b> tie a MAC to an address; <b>exclusions</b> keep static addresses out of the pool; <b>options</b> deliver gateway (3), DNS (6), domain, NTP (42), TFTP/boot.</li>' +
+      '<li>Cloud service models: <b>IaaS</b> (VMs, you manage OS up), <b>PaaS</b> (you manage app + data), <b>SaaS</b> (you just use it). Deployment: public, private, hybrid, community. Connectivity: VPN, <b>direct/dedicated connection</b>, transit gateway, VPC/VNet peering.</li>' +
+      '<li>Cloud networking terms: <b>VPC/VNet</b>, subnets, <b>security groups</b> (stateful, per-instance), <b>NACLs</b> (stateless, per-subnet), <b>NAT gateway</b>, <b>internet gateway</b>, <b>load balancer</b>, <b>availability zones/regions</b>.</li>' +
+      '<li>Data center terms: <b>spine-leaf</b>, <b>EoR/ToR</b> (end/top of rack), <b>east-west vs north-south</b> traffic, <b>software-defined networking (SDN)</b> separating control and data planes, controllers, and <b>infrastructure as code</b>.</li></ul>' }],
+    qs: [
+      Q("Which DNS record maps a hostname to an IPv4 address?", "A", ["AAAA", "PTR", "CNAME"], "AAAA is for IPv6; PTR is reverse.", 1),
+      Q("Which record directs email for a domain to the correct mail server?", "MX", ["A", "TXT", "NS"], "Mail eXchanger, with a priority value.", 1),
+      Q("A reverse lookup of an IP to a name uses which record?", "PTR", ["A", "CNAME", "SRV"], "Stored in in-addr.arpa zones.", 1),
+      Q("Which record is used for SPF, DKIM and DMARC email-authentication data?", "TXT", ["MX", "SRV", "NS"], "Text records hold policy strings.", 4),
+      Q("Which record lets 'ftp.example.com' and 'web.example.com' both point to 'host.example.com'?", "CNAME", ["A", "PTR", "SOA"], "Canonical name alias.", 1),
+      Q("Which record advertises the authoritative name servers for a zone?", "NS", ["SOA", "MX", "A"], "Name Server records.", 1),
+      Q("A client's web page loads by IP but not by name, and nslookup times out. Problem area?", "DNS resolution", ["Default gateway", "Subnet mask", "Cabling"], "Connectivity works; name resolution does not.", 5),
+      Q("Put the DHCP process in order.", "Discover, Offer, Request, Acknowledge", ["Offer, Discover, Ack, Request", "Request, Offer, Discover, Ack", "Discover, Request, Offer, Ack"], "DORA.", 1),
+      Q("Clients on a remote VLAN get no DHCP addresses, but local clients do. What is missing?", "An IP helper / DHCP relay on the router interface", ["A second SSID", "A CNAME record", "A static route to DNS"], "DHCP Discover is a broadcast and does not cross routers.", 5),
+      Q("What does a DHCP reservation do?", "Always gives a specific MAC the same IP address", ["Excludes an address from the pool", "Shortens the lease", "Blocks a client"], "Good for printers and servers.", 3),
+      Q("Which DHCP option number delivers the default gateway?", "3", ["6", "15", "66"], "Option 3 = router; 6 = DNS; 15 = domain name; 66 = TFTP server.", 3),
+      Q("Two DHCP servers hand out overlapping addresses, causing conflicts. Best fix?", "Split the scope or use DHCP failover with no overlap", ["Shorten the lease to 1 minute", "Disable DNS", "Use APIPA"], "Coordinate scopes between servers.", 5),
+      Q("In which cloud model does the customer manage the operating system and applications but not the hardware?", "IaaS", ["PaaS", "SaaS", "FaaS"], "Infrastructure as a Service = VMs and networking.", 1),
+      Q("A company uses Salesforce and Microsoft 365. These are examples of:", "SaaS", ["IaaS", "PaaS", "Private cloud"], "Software delivered over the Internet.", 1),
+      Q("Which cloud connectivity option gives a private, dedicated, predictable link to a provider instead of the Internet?", "Direct/dedicated connection", ["Site-to-site VPN over the Internet", "SaaS portal", "DNS forwarder"], "e.g. AWS Direct Connect, Azure ExpressRoute.", 1),
+      Q("Which cloud construct is stateful and controls traffic to a single instance?", "Security group", ["Network ACL", "Route table", "Internet gateway"], "Security groups are stateful; NACLs are stateless and per-subnet.", 4),
+      Q("A hybrid cloud is best described as:", "A mix of on-premises/private and public cloud that work together", ["Only public cloud", "Two SaaS apps", "A private data center only"], "Workloads span both.", 1),
+      Q("Which architecture separates the control plane from the data plane and centralizes decisions?", "SDN", ["STP", "MPLS", "NAT"], "Software-Defined Networking uses controllers.", 1),
+      Q("In a spine-leaf fabric, servers connect to:", "Leaf switches", ["Spine switches", "The core router", "The WAN edge"], "Every leaf connects to every spine.", 1),
+      Q("Which NTP concept indicates how many hops a server is from the reference clock?", "Stratum", ["TTL", "Metric", "Cost"], "Stratum 0 = reference; stratum 1 = directly attached.", 3),
+      Q("A SIP phone system looks up its server using which DNS record type?", "SRV", ["MX", "PTR", "AAAA"], "Service records locate services by protocol and port.", 1),
+      Q("Which record's serial number tells secondary servers a zone changed and should be transferred?", "SOA", ["NS", "A", "TXT"], "Start of Authority holds the serial and timers.", 1),
+      Q("DNS caching uses which value to decide how long to keep a record?", "TTL", ["Serial", "Priority", "Weight"], "Time to live in seconds.", 1),
+      Q("A company wants to resolve internal names privately and forward others to the Internet. Configure:", "An internal DNS server with conditional forwarding", ["Only public DNS", "A CNAME to 8.8.8.8", "DHCP option 3"], "Split-horizon / forwarders.", 1),
+      Q("Which attack poisons a resolver so a name points to an attacker's IP?", "DNS cache poisoning / spoofing", ["ARP flooding", "Evil twin", "Smurf"], "DNSSEC helps validate records.", 4),
+      Q("Which cloud term describes isolated physical locations within one region for high availability?", "Availability zones", ["Edge locations", "VPC peers", "Subnets"], "Spread workloads across AZs.", 1),
+      Q("Infrastructure as code primarily provides:", "Repeatable, version-controlled provisioning of resources", ["Faster cables", "Wireless roaming", "DNS caching"], "Terraform, CloudFormation, Ansible.", 3),
+      Q("A DHCP scope is exhausted and new clients fail. Two good fixes are:", "Expand the scope and shorten lease times", ["Disable DNS and NTP", "Use APIPA permanently", "Add a CNAME"], "Free up addresses and add capacity.", 5),
+      Q("Which service automatically registers client names and IPs so DNS stays current (Windows)?", "Dynamic DNS (DDNS)", ["Static hosts file", "WINS only", "SNMP"], "DHCP can update DNS records.", 3),
+      Q("Which cloud networking device lets private-subnet instances reach the Internet for updates but blocks inbound?", "NAT gateway", ["Internet gateway directly", "Security group", "Route 53"], "Outbound only.", 1),
+      T("Type the DNS record type for an IPv4 host address.", ["A"], "A record.", 1, "record"),
+      T("Spell the DHCP four-step process acronym.", ["DORA"], "Discover, Offer, Request, Acknowledge.", 1, "acronym")
+    ] });
+
+  // ================= s12 operations =================
+  X.add('s12', { gateN: 20,
+    lesson: [{ h: 'Objective deep dive (3.0): monitoring, documentation and availability', html:
+      '<ul><li><b>Monitoring</b>: SNMP (polling 161, traps 162; use v3), <b>syslog</b> severities 0–7 (0 emergency … 7 debug), <b>flow data</b> (NetFlow/IPFIX/sFlow) for who-talked-to-whom, <b>SIEM</b> for correlation, <b>packet capture</b> for deep analysis. Build a <b>baseline</b> of normal CPU, memory, bandwidth, temperature, then alert on deviations.</li>' +
+      '<li><b>Documentation</b>: physical and logical diagrams, <b>rack elevations</b>, IP address management (<b>IPAM</b>), asset inventory, cable/port labeling, <b>wiring/floor plans</b>, <b>baseline configs</b>, <b>runbooks/SOPs</b>, and policies — <b>AUP</b>, <b>NDA</b>, <b>SLA</b>, <b>MOU</b>, <b>MSA/SOW</b>, BYOD, password policy, onboarding/offboarding.</li>' +
+      '<li><b>Change management</b>: a change request with risk/impact, rollback (backout) plan, approvals, a maintenance window, implementation, validation, and documentation updates.</li>' +
+      '<li><b>Availability metrics</b>: <b>MTBF</b> (mean time between failures — reliability), <b>MTTR</b> (mean time to repair), <b>RTO</b> (how long you can be down), <b>RPO</b> (how much data you can lose). <b>DR sites</b>: cold (space/power), warm (some equipment), hot (live, ready now). Power: UPS for minutes, generator for hours; redundant <b>PSUs</b> and feeds.</li>' +
+      '<li><b>QoS</b>: classify and mark (DSCP/CoS), then queue, <b>shape</b> (buffer excess) or <b>police</b> (drop/remark excess). Voice and video need low latency, jitter and loss.</li>' +
+      '<li><b>Backups</b>: full/incremental/differential, 3-2-1 rule, config backups before every change, and test restores.</li></ul>' }],
+    qs: [
+      Q("Which syslog severity level is the most critical?", "0 (Emergency)", ["7 (Debug)", "1 (Alert)", "4 (Warning)"], "0 = emergency, 7 = debug.", 3),
+      Q("A team wants to know which applications use the most WAN bandwidth over a week. Best data source?", "Flow records (NetFlow/IPFIX/sFlow)", ["Syslog debug", "SNMP interface counters only", "Ping"], "Flows summarize conversations and applications.", 3),
+      Q("Which protocol version should be used to monitor devices securely?", "SNMPv3", ["SNMPv1", "SNMPv2c", "Telnet"], "v3 adds authentication and encryption.", 4),
+      Q("What is the purpose of a performance baseline?", "Define normal behavior so deviations can be detected", ["Encrypt traffic", "Assign IP addresses", "Replace documentation"], "Compare current metrics to normal.", 3),
+      Q("A WAN router's CPU sits at 95% every weekday at 9 a.m. but you have no reference. What was missing?", "A baseline of normal utilization", ["A second SSID", "A CNAME record", "An ACL"], "Baselines reveal what is abnormal.", 5),
+      Q("Which tool collects and correlates logs from many devices to raise security alerts?", "SIEM", ["IPAM", "OTDR", "Toner probe"], "Security Information and Event Management.", 3),
+      Q("Which document shows exactly which device occupies each rack unit?", "Rack elevation diagram", ["Logical diagram", "Change request", "AUP"], "Rack elevations map U positions.", 3),
+      Q("Which tool manages subnets, IP assignments, and DHCP/DNS records in one place?", "IPAM", ["SIEM", "NMS only", "OTDR"], "IP Address Management.", 3),
+      Q("Which metric expresses the maximum acceptable downtime after a failure?", "RTO", ["RPO", "MTBF", "MTTR"], "Recovery Time Objective.", 3),
+      Q("Which metric expresses the maximum acceptable data loss, measured in time?", "RPO", ["RTO", "MTTR", "SLA"], "Recovery Point Objective drives backup frequency.", 3),
+      Q("Which DR site has running systems and current data, ready to take over almost immediately?", "Hot site", ["Cold site", "Warm site", "Backup tape vault"], "Most expensive, lowest RTO.", 3),
+      Q("A cold site provides:", "Space, power and cooling but little or no equipment", ["Live replicated systems", "Running servers with current data", "Nothing"], "Cheapest, slowest to recover.", 3),
+      Q("Which power device bridges the gap until a generator starts?", "UPS", ["PDU", "ATS only", "Surge strip"], "UPS = minutes; generator = hours.", 3),
+      Q("What should always be captured before implementing a network change?", "A configuration backup and a rollback plan", ["A new VLAN", "A packet capture only", "A DNS record"], "So you can revert if it fails.", 3),
+      Q("A change is approved and scheduled for 2 a.m. Sunday. That scheduled slot is the:", "Maintenance window", ["Baseline", "SLA", "RPO"], "Low-impact time for changes.", 3),
+      Q("Which QoS action buffers excess traffic rather than dropping it?", "Shaping", ["Policing", "Classification", "Marking"], "Policing drops or remarks; shaping delays.", 3),
+      Q("Voice traffic is marked with which Layer 3 value for priority?", "DSCP EF (46)", ["TTL 64", "MTU 1500", "VLAN 1"], "Expedited Forwarding for real-time voice.", 3),
+      Q("Which backup type copies only data changed since the last full backup and does not reset the archive bit?", "Differential", ["Incremental", "Full", "Snapshot only"], "Incrementals reset the bit; differentials grow until the next full.", 3),
+      Q("The 3-2-1 backup rule means:", "3 copies, on 2 media types, with 1 offsite", ["3 servers, 2 sites, 1 admin", "3 full backups per day", "Keep backups 321 days"], "Protects against site loss.", 3),
+      Q("Which agreement defines uptime guarantees and penalties between a provider and customer?", "SLA", ["NDA", "AUP", "MOU"], "Service Level Agreement.", 3),
+      Q("Which document defines what employees may and may not do on the network?", "AUP", ["SLA", "SOW", "NDA"], "Acceptable Use Policy, usually signed.", 3),
+      Q("A less formal agreement outlining shared intentions between two organizations is a(n):", "MOU", ["SLA", "NDA", "AUP"], "Memorandum of Understanding.", 3),
+      Q("Which agreement protects confidential information shared between parties?", "NDA", ["SLA", "MOU", "AUP"], "Non-Disclosure Agreement.", 3),
+      Q("After a successful firmware upgrade, what must the technician do?", "Update documentation and the baseline configuration", ["Change the SSID", "Reboot all PCs", "Lower the lease time"], "Keep records current.", 3),
+      Q("Which metric describes average reliability of a component before it fails?", "MTBF", ["MTTR", "RTO", "RPO"], "Mean Time Between Failures.", 3),
+      Q("Interface counters show rising CRC errors and input errors on a port. Likely cause?", "Physical layer problem: bad cable, connector or duplex mismatch", ["DNS misconfiguration", "Wrong DHCP scope", "A missing CNAME"], "CRC/input errors point to Layer 1/2.", 5),
+      Q("Which feature on a managed switch sends a trap the moment a link goes down?", "SNMP traps", ["NetFlow export", "Port mirroring", "DHCP relay"], "Event-driven, no polling delay.", 3),
+      Q("Which practice reduces the blast radius when a change goes wrong?", "Test in a lab/staging environment and have a rollback plan", ["Change everything at once in production", "Skip approvals to save time", "Disable monitoring"], "Controlled change management.", 3),
+      Q("Redundant power supplies on a core switch protect against:", "A single PSU or power-feed failure", ["Cable cuts", "DNS outages", "VLAN misconfiguration"], "Pair with separate PDUs/feeds.", 3),
+      Q("A business wants near-zero data loss for its database. This drives a very low:", "RPO", ["RTO", "MTBF", "SLA credit"], "Frequent replication/backups.", 3),
+      T("Type the syslog severity number for Debug.", ["7"], "0 = emergency … 7 = debug.", 3, "number"),
+      T("Spell the acronym for the metric 'maximum acceptable downtime'.", ["RTO"], "Recovery Time Objective.", 3, "acronym")
+    ] });
+
+  // ================= s13 security =================
+  X.add('s13', { gateN: 22,
+    lesson: [{ h: 'Objective deep dive (4.0): threats, hardening and access control', html:
+      '<ul><li><b>CIA triad</b>: Confidentiality, Integrity, Availability. Add AAA: Authentication, Authorization, Accounting. <b>Zero Trust</b>: never trust, always verify; least privilege; micro-segmentation.</li>' +
+      '<li><b>Attacks</b>: DoS/<b>DDoS</b>, <b>on-path</b> (man-in-the-middle), <b>ARP spoofing/poisoning</b>, <b>DNS poisoning</b>, <b>VLAN hopping</b>, <b>MAC flooding</b>, <b>rogue DHCP</b>, <b>evil twin/rogue AP</b>, deauth, <b>ransomware/malware</b>, <b>phishing/social engineering</b> (tailgating, shoulder surfing, pretexting), <b>password attacks</b> (brute force, dictionary, spraying), <b>zero-day</b>.</li>' +
+      '<li><b>Hardening</b>: change defaults, disable unused ports/services, patch, strong passwords/MFA, <b>802.1X/NAC</b> with posture, <b>ACLs</b>, segmentation/VLANs, <b>DHCP snooping</b>, <b>Dynamic ARP Inspection</b>, <b>port security</b>, <b>BPDU guard</b>, disable Telnet/HTTP, encrypt management (SSH/HTTPS), and private/management VLANs.</li>' +
+      '<li><b>Access control</b>: RADIUS vs TACACS+, <b>802.1X</b> (supplicant, authenticator, authentication server), MFA factors (know/have/are/where), <b>least privilege</b>, <b>role-based access control</b>, <b>MAC filtering</b> (weak alone), <b>captive portals</b>, <b>geofencing</b>.</li>' +
+      '<li><b>Physical security</b>: locks, badges, mantraps/access control vestibules, cameras, asset tracking, cable locks, secure equipment rooms.</li>' +
+      '<li><b>Firewalls</b>: stateless vs <b>stateful</b>, NGFW, <b>screened subnet (DMZ)</b>, implicit deny at the end of an ACL, rule order matters (first match).</li></ul>' }],
+    qs: [
+      Q("Which attack sends forged ARP replies so traffic flows through the attacker?", "ARP poisoning (on-path)", ["DNS poisoning", "VLAN hopping", "SYN flood"], "Dynamic ARP Inspection mitigates it.", 4),
+      Q("Which switch feature validates ARP replies against a trusted binding table?", "Dynamic ARP Inspection", ["BPDU Guard", "PortFast", "Storm control"], "Built on the DHCP snooping database.", 4),
+      Q("Which security model assumes no implicit trust, even inside the network?", "Zero Trust", ["Perimeter-only", "Open access", "Flat network"], "Verify every request; least privilege.", 4),
+      Q("A flood of SYN packets fills a server's connection table so it cannot serve users. This is a:", "SYN flood (DoS)", ["On-path attack", "Phishing", "Evil twin"], "Mitigate with SYN cookies and rate limiting.", 4),
+      Q("Which attack uses many compromised hosts to overwhelm a target at once?", "DDoS", ["DoS from one host", "Dictionary attack", "Shoulder surfing"], "Distributed denial of service.", 4),
+      Q("Which social-engineering attack follows an authorized person through a secure door?", "Tailgating", ["Phishing", "Pretexting", "Vishing"], "Access control vestibules (mantraps) help.", 4),
+      Q("Which control best prevents tailgating into a data center?", "Access control vestibule (mantrap)", ["A longer password", "DHCP snooping", "An ACL"], "Physical, one person at a time.", 4),
+      Q("A rogue DHCP server hands out a wrong gateway to redirect traffic. Which feature stops it?", "DHCP snooping", ["Port mirroring", "BPDU Guard", "NTP"], "Only trusted ports may send DHCP offers.", 4),
+      Q("Which attack tries a few common passwords against many accounts to avoid lockout?", "Password spraying", ["Brute force one account", "Rainbow table", "Phishing"], "Spreads attempts to stay under thresholds.", 4),
+      Q("Which standard provides port-based network access control with a supplicant, authenticator and authentication server?", "802.1X", ["802.1Q", "802.3af", "802.11i"], "Often with RADIUS and EAP.", 4),
+      Q("In 802.1X, the switch acts as the:", "Authenticator", ["Supplicant", "Authentication server", "CA"], "The client is the supplicant; RADIUS is the server.", 4),
+      Q("Which access model grants permissions based on a user's job function?", "Role-based access control (RBAC)", ["Discretionary by file owner", "MAC filtering", "Open access"], "Assign rights to roles, users to roles.", 4),
+      Q("A badge plus a fingerprint is an example of:", "Multifactor authentication (have + are)", ["Single sign-on", "Least privilege", "Something you know only"], "Two different factor types.", 4),
+      Q("Which is the weakest access control if used by itself on Wi-Fi?", "MAC filtering", ["WPA3-Enterprise", "802.1X with EAP-TLS", "Certificate authentication"], "MAC addresses are easily spoofed.", 4),
+      Q("Which principle gives users only the access they need to do their jobs?", "Least privilege", ["Implicit allow", "Full trust", "Defense in depth"], "Limits blast radius.", 4),
+      Q("Which firewall type tracks the state of connections and allows return traffic automatically?", "Stateful firewall", ["Stateless packet filter", "Hub", "Proxy ARP"], "Maintains a connection table.", 4),
+      Q("What is typically the last line of a firewall ACL?", "Implicit deny all", ["Permit all", "A log-only rule", "A NAT statement"], "Anything not explicitly allowed is denied.", 4),
+      Q("Where should Internet-facing servers be placed?", "In a screened subnet (DMZ)", ["On the internal LAN", "On the management VLAN", "In the guest SSID"], "Isolate from the internal network.", 4),
+      Q("Which attack broadcasts a fake AP with the company SSID to capture credentials?", "Evil twin", ["Rogue DHCP", "ARP poisoning", "Smurf"], "Validate the RADIUS server certificate to defend.", 4),
+      Q("Which control checks a device's patch level and antivirus before granting network access?", "NAC with posture assessment", ["MAC filtering", "Port mirroring", "QoS"], "Network Access Control.", 4),
+      Q("Which practice hardens a new switch out of the box?", "Change default credentials and disable unused services/ports", ["Enable Telnet for convenience", "Use VLAN 1 for users", "Leave HTTP enabled"], "Reduce attack surface.", 4),
+      Q("Which protocol should replace HTTP for managing a device's web interface?", "HTTPS", ["Telnet", "SNMPv1", "TFTP"], "Encrypt management traffic.", 4),
+      Q("A zero-day attack is dangerous because:", "No patch exists yet for the newly discovered vulnerability", ["It only affects old systems", "It is easy to detect with signatures", "It targets physical locks"], "Defense in depth and anomaly detection help.", 4),
+      Q("Which attack poisons a resolver so users are sent to a malicious site?", "DNS spoofing/poisoning", ["ARP flooding", "Deauth", "War driving"], "DNSSEC validates responses.", 4),
+      Q("Separating IoT cameras onto their own VLAN with restricted access is an example of:", "Network segmentation", ["Load balancing", "NAT", "QoS"], "Contain compromised devices.", 4),
+      Q("Which AAA function records what an authenticated user did?", "Accounting", ["Authentication", "Authorization", "Encryption"], "Logs for audit.", 4),
+      Q("Which attack floods a switch's MAC table to force it to flood frames so they can be captured?", "MAC flooding", ["VLAN hopping", "SYN flood", "Pharming"], "Port security limits learned MACs.", 4),
+      Q("Which physical control deters shoulder surfing at a reception desk?", "Privacy screens and positioning", ["Longer passwords", "DHCP snooping", "An ACL"], "Keep screens out of view.", 4),
+      Q("A user received an email pretending to be IT asking for their password. This is:", "Phishing", ["Tailgating", "A SYN flood", "VLAN hopping"], "Train users and use email filtering.", 4),
+      Q("Which control restricts access based on the device's geographic location?", "Geofencing", ["RBAC", "MAC filtering", "QoS"], "Deny logins from unexpected regions.", 4),
+      Q("Honeypots are used to:", "Lure and study attackers away from real systems", ["Speed up DNS", "Assign IP addresses", "Encrypt backups"], "Detection and research.", 4),
+      Q("Which encryption protects data as it travels across an untrusted network via a tunnel?", "IPsec VPN", ["WEP", "Telnet", "FTP"], "Confidentiality and integrity in transit.", 4),
+      T("Spell the triad that stands for Confidentiality, Integrity, Availability.", ["CIA"], "The core security triad.", 4, "acronym"),
+      T("Type the IEEE standard for port-based access control (802.1_).", [/^(802\.1)?x$/i], "802.1X.", 4, "802.1.")
+    ] });
+
+  // ================= s14 troubleshooting =================
+  X.add('s14', { gateN: 22,
+    lesson: [{ h: 'Objective deep dive (5.1–5.5): the method, the tools, the common faults', html:
+      '<ol><li><b>Identify the problem</b> (gather info, question users, note changes).</li><li><b>Establish a theory</b> of probable cause (OSI: top-down, bottom-up, or divide and conquer).</li><li><b>Test the theory</b>; if confirmed, plan; if not, form a new one.</li><li><b>Establish a plan of action</b> and consider impact.</li><li><b>Implement</b> the solution or escalate.</li><li><b>Verify</b> full functionality and implement preventive measures.</li><li><b>Document</b> findings, actions and outcomes.</li></ol>' +
+      '<table><tr><th>Tool</th><th>Use</th></tr><tr><td>ping / traceroute / pathping</td><td>Reachability and path</td></tr><tr><td>ipconfig/ifconfig/ip</td><td>Local addressing</td></tr><tr><td>nslookup/dig</td><td>DNS</td></tr><tr><td>arp -a</td><td>IP↔MAC cache</td></tr><tr><td>netstat/ss</td><td>Connections and ports</td></tr><tr><td>nmap</td><td>Discovery and open ports</td></tr><tr><td>tcpdump/Wireshark</td><td>Packet capture</td></tr><tr><td>cable tester/certifier, toner, OTDR, light meter, loopback</td><td>Physical layer</td></tr><tr><td>show commands, speed test, iperf, Wi-Fi analyzer</td><td>Device and performance</td></tr></table>' +
+      '<ul><li><b>Common wired faults</b>: bad/incorrect cable, duplex/speed mismatch, VLAN mismatch, STP loop, port errors (CRC, runts, giants), bad SFP, PoE budget, wrong gateway/mask/DNS, duplicate IP, DHCP scope exhaustion.</li>' +
+      '<li><b>Common wireless faults</b>: interference, channel overlap/co-channel, low RSSI, wrong passphrase/security, roaming/sticky clients, insufficient capacity, DHCP on the WLAN.</li>' +
+      '<li><b>Common service faults</b>: DNS misconfig, expired certificate, blocked port/firewall rule, asymmetric routing, MTU/black hole, time drift breaking authentication.</li></ul>' }],
+    qs: [
+      Q("What is the FIRST step of the CompTIA troubleshooting methodology?", "Identify the problem", ["Establish a theory", "Implement a solution", "Document findings"], "Gather information and question the obvious.", 5),
+      Q("After implementing a fix, what should you do before documenting?", "Verify full system functionality and apply preventive measures", ["Escalate", "Reboot everything", "Change the SSID"], "Confirm it actually works.", 5),
+      Q("A user cannot reach any website. ipconfig shows 169.254.5.9. What is the cause?", "The client is not receiving a DHCP address (APIPA)", ["DNS is slow", "The web server is down", "The cable is fine"], "Check DHCP reachability and the switch port.", 5),
+      Q("A user can ping by IP but not by name. Which tool confirms the cause?", "nslookup/dig", ["ping only", "arp -a", "ipconfig /release"], "Test DNS resolution directly.", 5),
+      Q("Which command shows the IP-to-MAC cache on a host?", "arp -a", ["netstat -r", "nslookup", "tracert"], "Useful for duplicate IP and on-path issues.", 5),
+      Q("Which command lists active connections and listening ports?", "netstat / ss", ["ping", "dig", "ipconfig"], "See what the host is talking to.", 5),
+      Q("Which tool maps the path packets take and where latency appears?", "traceroute/tracert", ["ping", "arp", "nslookup"], "TTL-based hop discovery.", 5),
+      Q("Which tool discovers live hosts and open ports on a subnet?", "nmap", ["OTDR", "Toner", "Loopback plug"], "Network scanner.", 5),
+      Q("A fiber run has no light. Which tool shows the distance to the break?", "OTDR", ["Multimeter", "Toner probe", "Wi-Fi analyzer"], "Optical time-domain reflectometer.", 5),
+      Q("Which tool identifies which patch-panel port a wall jack connects to?", "Toner and probe", ["OTDR", "iperf", "nmap"], "Trace the tone along the cable.", 5),
+      Q("Which tool measures achievable throughput between two hosts?", "iperf", ["ping", "arp", "dig"], "Generates TCP/UDP test traffic.", 5),
+      Q("Users report the network is 'slow' at a specific time daily. Best first action?", "Compare current metrics to the baseline during that window", ["Replace the core switch", "Reinstall Windows", "Change DNS"], "Baselines reveal the anomaly.", 5),
+      Q("A switch port logs increasing CRC errors. Likely cause?", "A faulty cable or duplex mismatch", ["Wrong DNS server", "Expired certificate", "DHCP exhaustion"], "CRC points to Layer 1/2.", 5),
+      Q("One VLAN cannot reach another on the same L3 switch. Which is most likely?", "Missing or misconfigured SVI / inter-VLAN routing", ["Bad cable", "DNS down", "Wrong SSID"], "Check the SVIs and ip routing.", 5),
+      Q("Two PCs intermittently drop off the network and logs show MAC flapping. Likely cause?", "A Layer 2 loop or duplicate MAC", ["Expired DHCP only", "Wrong time zone", "A CNAME record"], "Check STP and cabling for loops.", 5),
+      Q("A new app fails with 'connection timed out' though the host is pingable. Likely cause?", "A firewall is blocking the application's port", ["DNS is down", "Bad cable", "Duplex mismatch"], "Ping proves L3; the port/service is blocked.", 5),
+      Q("Website works internally but external users get certificate warnings. Likely cause?", "An expired or mismatched TLS certificate", ["Duplex mismatch", "DHCP exhaustion", "STP loop"], "Renew/replace the certificate.", 5),
+      Q("A VPN connects but some large transfers hang while small pings work. Likely cause?", "MTU/MSS mismatch (fragmentation black hole)", ["Wrong DNS", "Bad SFP", "APIPA"], "Lower MTU/MSS or allow ICMP for PMTUD.", 5),
+      Q("Kerberos logins fail after a server's clock drifts by 10 minutes. Fix?", "Correct time synchronization (NTP)", ["Replace the switch", "Change the SSID", "Add a CNAME"], "Kerberos tolerates only small time skew (default 5 min).", 5),
+      Q("A user's PC has a duplicate IP warning. Best fix?", "Use DHCP or assign a unique static address", ["Change the gateway only", "Shorten the lease to 0", "Disable DNS"], "Two hosts share an address.", 5),
+      Q("Wireless clients associate but get no IP. Where to look?", "DHCP scope/relay for the wireless VLAN", ["The SSID name", "Antenna gain", "Channel width"], "Association works; addressing fails.", 5),
+      Q("Which approach fits a problem where only the accounting app is broken?", "Top-down (start at the application layer)", ["Bottom-up starting at cables", "Replace the router", "Reboot every device"], "Isolated app issue starts at the top.", 5),
+      Q("Which approach starts at the physical layer and works up?", "Bottom-up", ["Top-down", "Divide and conquer", "Random"], "Good when a whole area is down (e.g. no link lights).", 5),
+      Q("A link negotiates 100 Mbps half duplex instead of 1 Gbps full. Likely cause?", "Cable fault (a broken pair) or manual speed/duplex mismatch", ["Wrong DNS", "Expired cert", "DHCP exhaustion"], "Gigabit needs all four pairs and matching settings.", 5),
+      Q("Which show command displays which VLAN each access port is in?", "show vlan brief", ["show ip route", "show mac address-table", "show running-config | include ntp"], "Verify VLAN assignments.", 5),
+      Q("A newly patched cable fails certification for NEXT. Likely cause?", "Pairs untwisted too far at the termination", ["Wrong VLAN", "DNS failure", "PoE budget"], "Crosstalk from untwisting.", 5),
+      Q("Intermittent PoE camera reboots across a switch point to:", "An exceeded total PoE power budget", ["Wrong SSID", "DNS issues", "A bad default route"], "Check the switch's PoE budget.", 5),
+      Q("A user changed nothing but lost access after a WAN link flapped and came back on a different path. Stateful firewall drops return traffic. This is:", "Asymmetric routing", ["A switching loop", "DNS poisoning", "APIPA"], "Return path differs from the forward path.", 5),
+      Q("Which single tool best captures and decodes packets to diagnose a complex application issue?", "Wireshark (packet capture)", ["Toner probe", "OTDR", "Multimeter"], "Deep protocol analysis.", 5),
+      Q("A user reports slow file copies; iperf shows full speed but copies are slow. Likely cause?", "The file server or storage, not the network", ["The switch", "DNS", "The cable"], "iperf clears the network path.", 5),
+      Q("Which command releases and renews a Windows DHCP lease?", "ipconfig /release then ipconfig /renew", ["ipconfig /flushdns", "netstat -r", "arp -d"], "Force a new lease.", 5),
+      Q("A whole floor loses connectivity after hours. Link lights on the access switch uplink are off. Best approach?", "Bottom-up — check the uplink cable, SFP and distribution port", ["Top-down from the app", "Rebuild DNS", "Reimage PCs"], "Physical outage affecting many users.", 5),
+      T("How many steps are in the CompTIA troubleshooting methodology? (number)", ["7"], "Identify, theory, test, plan, implement, verify, document.", 5, "number"),
+      T("Type the command (Linux) that shows the IP-to-MAC neighbor cache.", [/^ip neigh( show)?$/i, "arp -a", "arp"], "ip neigh (or arp -a).", 5, "command")
+    ] });
+})();
+
+;
+/* Net+ depth pack 4 — Pro track (p16–p20): senior-engineer depth beyond the exam. */
+(function () {
+  var X = window.X, Q = window.Q, T = window.TYPE;
+
+  // ---- p16 design & HA ----
+  X.add('p16', {
+    qs: [
+      Q("Two firewalls run in active-passive HA but both uplink to the same single access switch. What is the real flaw?", "A shared single point of failure defeats the HA pair", ["The passive firewall is wasted", "HA needs three units", "Active-active is always better"], "Redundant devices need redundant paths and power too.", 3),
+      Q("48 access ports at 1 Gbps share two 10 Gbps uplinks. What is the oversubscription ratio?", "2.4:1", ["4.8:1", "1:1", "24:1"], "48 ÷ 20 = 2.4; acceptable for access, not for a data center spine.", 3),
+      Q("Which technology lets two switches appear as one LACP partner so a server can dual-home without STP blocking a link?", "MLAG / vPC", ["PortFast", "HSRP", "Root guard"], "Multi-chassis link aggregation uses both uplinks actively.", 2),
+      Q("A design must survive the loss of any one distribution switch with sub-second failover. Best combination?", "Dual-homed access with MLAG and a fast FHRP (or an SVI on both via vPC)", ["A single large chassis switch", "RIP with default timers", "One firewall"], "Redundant paths plus fast convergence.", 2),
+      Q("To translate redundancy into a business case, you compare the cost of redundant gear against:", "The cost of downtime per hour times expected outage time", ["The number of VLANs", "The DNS TTL", "The MAC table size"], "Risk in dollars justifies the spend.", 3),
+      Q("Which convergence feature detects a neighbor loss in milliseconds, faster than routing-protocol hellos?", "BFD (Bidirectional Forwarding Detection)", ["NTP", "CDP", "LLDP"], "BFD triggers fast reroute.", 2),
+      Q("A dual-power-supply switch is fed from one PDU on one circuit. What should change?", "Feed each PSU from a separate circuit/PDU", ["Remove one PSU", "Use a longer power cord", "Disable one PSU"], "Diverse power feeds, not just dual PSUs.", 3),
+      Q("Which metric drives how much link capacity to buy ahead of growth?", "Trending the baseline utilization toward a threshold (e.g. upgrade at 70%)", ["The STP priority", "The DNS record count", "The firewall rule count"], "Capacity planning uses trends, not guesses.", 3),
+      Q("Spanning tree blocks one of two redundant links, wasting half the bandwidth. Which modern approach avoids that at the access layer?", "Routed access or MLAG so both links forward", ["Disable STP entirely", "Use hubs", "Shorten STP timers to zero"], "Both links active without a loop.", 2),
+      Q("A single IDF serves a whole building over one fiber pair. A backhoe cuts it. The design lesson is:", "Provide diverse physical paths for critical uplinks", ["Add more VLANs", "Increase the MTU", "Use a louder alarm"], "Geographic diversity for fiber runs.", 3)
+    ] });
+
+  // ---- p17 OSPF & BGP ----
+  X.add('p17', {
+    qs: [
+      Q("OSPF cost on a reference bandwidth of 100 Mbps for a 1 Gbps link (default formula) is:", "1 (costs are rounded up, minimum 1)", ["10", "100", "0"], "Raise the reference bandwidth so 1G, 10G and 100G differ.", 2),
+      Q("Two OSPF paths exist: one 1 Gbps link (cost 1) and two serial hops (cost 64 each). Which path is chosen?", "The 1 Gbps link (total cost 1)", ["The serial path (lower hop count)", "Both, round-robin by default", "Neither"], "OSPF uses cumulative cost, not hop count.", 2),
+      Q("Why raise OSPF's reference bandwidth above the default 100 Mbps?", "So links faster than 100 Mbps get distinct, meaningful costs", ["To speed up hellos", "To shrink the routing table", "To disable areas"], "Otherwise 1G, 10G and 100G all cost 1.", 2),
+      Q("Which OSPF area type blocks external LSAs but allows a default route in?", "Stub area", ["Backbone area 0", "Transit area", "Virtual link"], "Stubs reduce LSA flooding at the edge.", 2),
+      Q("BGP selects the best path primarily by which attribute first (after weight on Cisco)?", "Highest local preference", ["Lowest MED", "Shortest AS_PATH only", "Lowest router ID"], "Order: weight, local pref, AS_PATH, origin, MED, eBGP over iBGP, …", 2),
+      Q("You want inbound traffic from the Internet to prefer one of your two ISPs. Which lever is most reliable?", "AS_PATH prepending on the less-preferred link", ["Local preference (affects outbound)", "OSPF cost", "STP priority"], "Inbound is influenced by what you advertise; AS_PATH prepend makes a path look longer.", 2),
+      Q("Local preference influences which direction of traffic in BGP?", "Outbound (which exit your AS uses)", ["Inbound only", "Both equally", "Neither"], "Higher local pref = preferred exit.", 2),
+      Q("An eBGP route and an OSPF route exist for the same prefix. Which is installed by default (AD)?", "eBGP (AD 20)", ["OSPF (AD 110)", "iBGP (AD 200)", "RIP (AD 120)"], "Lower administrative distance wins.", 2),
+      Q("A dual-ISP edge keeps failing over slowly. Which feature speeds detection of a dead BGP peer?", "BFD for BGP", ["Longer hold timers", "Bigger MTU", "More VLANs"], "BFD detects link loss in milliseconds.", 2),
+      Q("Which design prevents a stub enterprise from becoming a transit AS between two ISPs?", "Only advertise your own prefixes; filter routes so you never readvertise one ISP's routes to the other", ["Advertise a default route to both", "Use OSPF instead", "Disable NAT"], "Outbound filtering / AS_PATH filters.", 4),
+      Q("Equal-cost multipath (ECMP) in OSPF requires paths with:", "The same total cost to the destination", ["Different costs", "The same router ID", "The same area only"], "Load-share across equal-cost paths.", 2),
+      Q("A flapping link causes repeated SPF runs and CPU spikes. Which features help?", "LSA/SPF throttling and interface dampening", ["Faster hellos", "Disabling OSPF", "Lower MTU"], "Throttle recomputation during instability.", 2)
+    ] });
+
+  // ---- p18 automation & IaC ----
+  X.add('p18', {
+    qs: [
+      Q("Which practice lets you rebuild an entire switch's config from a file in version control?", "Infrastructure as code (declarative config in Git)", ["Manual CLI with screenshots", "Copy-paste from email", "Memorizing commands"], "Reproducible, reviewable, auditable.", 3),
+      Q("Which protocol/interface do modern devices expose for structured, programmatic configuration?", "NETCONF/RESTCONF with YANG models", ["Telnet banners", "SNMPv1 only", "TFTP"], "Model-driven APIs replace screen scraping.", 3),
+      Q("Which data format is commonly used in automation playbooks and API bodies?", "JSON or YAML", ["Binary only", "PDF", "Plain prose"], "Structured, machine-readable.", 3),
+      Q("An Ansible playbook pushes a VLAN to 200 switches. A bug adds it to the wrong VLAN everywhere. Which practice would have caught it?", "Test in a lab/staging inventory and review the diff first", ["Push faster", "Skip version control", "Run as admin"], "Change management applies to automation too.", 3),
+      Q("What does 'idempotent' mean for a configuration tool?", "Running it repeatedly produces the same end state without side effects", ["It runs only once ever", "It randomizes config", "It requires a reboot each time"], "Safe to re-run.", 3),
+      Q("Which approach reduces 'configuration drift' across a fleet?", "Continuously enforce a declared desired state from source control", ["Let each engineer tweak devices directly", "Disable backups", "Use longer passwords"], "Desired-state enforcement.", 3),
+      Q("A CI pipeline for network changes should at minimum include:", "Linting/validation and a review step before deploy", ["Direct production push with no review", "Only a spell check", "Nothing automated"], "Catch errors before they ship.", 3),
+      Q("Which tool category collects device state via APIs and alerts on drift from intent?", "Network source-of-truth / assurance platforms", ["A label printer", "A cable certifier", "An OTDR"], "Intent-based networking.", 3),
+      Q("Why store device configs in Git rather than a shared drive?", "Versioning, diffs, blame and rollback to any prior state", ["It is faster to type", "It encrypts automatically", "It removes the need for backups"], "History and review.", 3),
+      Q("A webhook from the monitoring system auto-opens a ticket on interface-down events. This is an example of:", "Event-driven automation", ["Manual triage", "A floating static route", "A VLAN"], "Automate the repetitive response.", 3)
+    ] });
+
+  // ---- p19 packet analysis & secops ----
+  X.add('p19', {
+    qs: [
+      Q("In Wireshark, which display filter shows only traffic to or from 10.0.0.5?", "ip.addr == 10.0.0.5", ["host 10.0.0.5 (that is a capture filter)", "tcp.port = 10.0.0.5", "ip = 10.0.0.5"], "Display filters use == ; capture filters use BPF syntax.", 5),
+      Q("You see many TCP retransmissions and duplicate ACKs in a capture. This indicates:", "Packet loss along the path", ["Normal DNS behavior", "A duplex that is fine", "Successful delivery"], "Investigate congestion, errors or drops.", 5),
+      Q("A capture shows a full three-way handshake then an immediate RST from the server. Likely meaning?", "The service/port is closed or the app rejected the connection", ["The cable is bad", "DNS failed", "The VLAN is wrong"], "Connection reached the host but was refused by the app.", 5),
+      Q("Which capture point sees traffic between two hosts on the same switch?", "A SPAN/mirror port (or a TAP) copying their ports", ["Any random access port", "The console port", "The management IP"], "Switches only send relevant frames to each port.", 5),
+      Q("A SYN flood appears in a capture as:", "Many SYNs with few or no completing ACKs", ["Many completed handshakes", "Only DNS queries", "ICMP echo replies"], "Half-open connections exhaust the table.", 4),
+      Q("Which field tells you a packet was fragmented in IPv4?", "The More Fragments flag and fragment offset", ["The TTL alone", "The source port", "The Ethernet type"], "Fragmentation issues cause black holes.", 5),
+      Q("You suspect data exfiltration over DNS. What pattern do you look for?", "Unusually large/frequent TXT or long subdomain queries to one domain", ["Normal A record lookups", "ICMP echo", "ARP requests"], "DNS tunneling hides data in queries.", 4),
+      Q("Which tool turns raw flow data into 'top talkers' without full packet capture?", "A NetFlow/IPFIX analyzer", ["An OTDR", "A toner probe", "A loopback plug"], "Flows summarize who talked to whom.", 3),
+      Q("A baseline shows 2% broadcast traffic; today it is 40% and the LAN is slow. Likely cause?", "A broadcast storm (possible Layer 2 loop)", ["Normal growth", "A DNS change", "A new certificate"], "Compare to baseline, then hunt the loop.", 5),
+      Q("Which capture filter limits capture to HTTPS traffic only?", "tcp port 443", ["ip.addr (display filter)", "http", "udp 53"], "Capture filters use BPF; keep captures small.", 5),
+      Q("A SIEM correlates a port scan followed by a successful login from a new country. The best response first is:", "Investigate and, per policy, isolate the account/host", ["Ignore it", "Delete the logs", "Reboot the switch"], "Detect, then contain per IR plan.", 4),
+      Q("Time stamps across devices disagree, making a capture timeline useless. Fix?", "Synchronize all devices to NTP", ["Use longer cables", "Increase MTU", "Disable logging"], "Accurate time is essential to correlation.", 3)
+    ] });
+
+  // ---- p20 outages, change & leadership ----
+  X.add('p20', {
+    qs: [
+      Q("During a major outage, what is the incident commander's first priority?", "Restore service and coordinate communication, not assign blame", ["Find who caused it", "Write the postmortem first", "Reboot everything at once"], "Mitigate first; learn later.", 3),
+      Q("A change caused the outage. The healthiest postmortem is:", "Blameless, focused on process and system gaps", ["A list of who to punish", "Hidden from the team", "Skipped to save time"], "Blameless reviews surface real causes.", 3),
+      Q("Which practice most reduces change-related outages over time?", "Small, reversible changes with peer review and a tested rollback", ["Large batched changes at quarter-end", "Changes with no documentation", "Production-only testing"], "Reduce blast radius and enable fast recovery.", 3),
+      Q("A stakeholder demands an immediate risky fix during an incident. The senior engineer should:", "Communicate the risk, follow the rollback-ready plan, and get the right approval", ["Do it instantly with no plan", "Refuse all changes", "Wait until morning regardless"], "Balance urgency with controlled change.", 3),
+      Q("What belongs in a runbook for a recurring task?", "Step-by-step procedure, prerequisites, validation and rollback", ["Only the engineer's phone number", "A vendor brochure", "Nothing — rely on memory"], "Runbooks make work repeatable and safe.", 3),
+      Q("Which metric best shows whether reliability is improving over quarters?", "Trend of MTTR and incident frequency", ["Number of cables", "VLAN count", "Switch weight"], "Track recovery speed and frequency.", 3),
+      Q("During an outage with unclear cause, a good communication cadence is:", "Regular status updates to stakeholders even when there is no fix yet", ["Silence until resolved", "One email at the end", "Updates only to management"], "Set expectations and reduce noise.", 3),
+      Q("A vendor's SLA promises 4-hour hardware replacement, but your RTO is 1 hour. The gap is closed by:", "Keeping cold/warm spares on site or a redundant unit", ["Lowering the RTO on paper", "Trusting the SLA alone", "Ignoring it"], "Design to your own RTO, not just the SLA.", 3),
+      Q("Which habit most helps a team scale past one hero engineer?", "Documentation, runbooks and cross-training", ["Keeping knowledge in one person's head", "No change control", "Disabling monitoring"], "Reduce the bus factor.", 3)
+    ] });
+})();
+
+;
 /* Net+ labs. kind 'net' = simulator lab, kind 'drill' = N-in-a-row generator drill. */
 (function () {
   var L = COURSE.labs, NS = window.NetSim;
@@ -2965,6 +3764,350 @@ window.COURSE = {
 
   window.LAB_KINDS = window.LAB_KINDS || {};
   window.LAB_KINDS.net = { render: render, build: build, helpers: helpers };
+})();
+
+;
+/* Hands-on PBQ-style labs: match (one or more columns of dropdowns), order (arrange steps), calc (numeric answers), acl (build a firewall rule set and test it). */
+(function () {
+  'use strict';
+  function $(s, r) { return (r || document).querySelector(s); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+  function head(L, api, tag) {
+    return '<div class="row" style="margin-bottom:8px"><button class="btn sm ghost" data-go="' + api.back + '">← Back</button><span class="grow"></span>' +
+      (L.hints && L.hints.length ? '<button class="btn sm ghost" id="hint">Hint</button>' : '') + '<button class="btn sm warn" id="rst">Reset</button></div>' +
+      '<div class="tag">' + tag + ' · HANDS-ON LAB</div><h1 style="margin:4px 0 6px">' + esc(L.title) + '</h1>' +
+      '<div class="panel tight small" style="margin-bottom:10px">' + L.brief + '</div>';
+  }
+  function common(m, L, api, redraw) {
+    var hi = 0, h = $('#hint', m);
+    if (h) h.onclick = function () { var k = Math.min(hi++, L.hints.length - 1); api.modal('<div class="tag">Hint ' + (k + 1) + ' of ' + L.hints.length + '</div><p>' + L.hints[k] + '</p><button class="btn" data-close>Got it</button>'); };
+    $('#rst', m).onclick = function () { if (!confirm('Reset this lab?')) return; api.clear(); redraw(true); };
+  }
+  function finish(api, L, allOk, out) {
+    if (allOk) {
+      out.innerHTML = '<div class="explain"><b class="v" style="color:var(--ok)">All correct.</b><div>' + (L.debrief || '') + '</div></div>';
+      if (!api.done()) { api.complete(); }
+    } else out.innerHTML = '<div class="explain"><b class="v" style="color:var(--bad)">Not yet.</b><div>Rows marked red are wrong. Read the explanation on each, fix them, and check again.</div></div>';
+  }
+
+  // ---------------- MATCH ----------------
+  function renderMatch(m, L, api, fresh) {
+    var saved = fresh ? null : api.load();
+    var cols = L.cols || [{ name: 'Answer', options: L.options }];
+    var order = saved && saved.order && saved.order.length === L.items.length ? saved.order : (L.keep ? L.items.map(function (_, i) { return i; }) : shuffle(L.items.map(function (_, i) { return i; })));
+    var picks = saved && saved.picks ? saved.picks : {};
+    m.innerHTML = head(L, api, 'PBQ') + '<div id="rows"></div><div class="row" style="margin-top:10px"><button class="btn pri" id="chk">Check answers</button><span class="chip" id="sc"></span></div><div id="out" style="margin-top:10px"></div>' +
+      '<p class="dim small">Pick an answer in every dropdown, then Check. This mirrors the drag-and-drop / dropdown performance-based questions on the real exam.</p>';
+    var rows = $('#rows', m);
+    rows.innerHTML = order.map(function (ii) {
+      var it = L.items[ii];
+      return '<div class="pbq-row" data-i="' + ii + '"><div class="it">' + it.t + '</div>' + cols.map(function (c, ci) {
+        var opts = c.options, cur = (picks[ii] || [])[ci] || '';
+        return '<label class="small muted" style="display:flex;flex-direction:column;gap:3px">' + (cols.length > 1 ? esc(c.name) : '') + '<select data-c="' + ci + '"><option value="">— choose —</option>' + opts.map(function (o) { return '<option' + (o === cur ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join('') + '</select></label>';
+      }).join('') + '<div class="why small" style="flex-basis:100%;display:none"></div></div>';
+    }).join('');
+    function persist() { api.save({ order: order, picks: picks }); }
+    rows.addEventListener('change', function (e) { var sel = e.target.closest('select'); if (!sel) return; var r = sel.closest('.pbq-row'), ii = +r.dataset.i; picks[ii] = picks[ii] || []; picks[ii][+sel.dataset.c] = sel.value; r.classList.remove('ok', 'bad'); persist(); });
+    $('#chk', m).onclick = function () {
+      var right = 0;
+      rows.querySelectorAll('.pbq-row').forEach(function (r) {
+        var ii = +r.dataset.i, it = L.items[ii], ans = Array.isArray(it.a) ? it.a : [it.a], p = picks[ii] || [];
+        var ok = ans.every(function (a, ci) { return Array.isArray(a) ? a.indexOf(p[ci]) >= 0 : p[ci] === a; });
+        r.classList.toggle('ok', ok); r.classList.toggle('bad', !ok); if (ok) right++;
+        var w = r.querySelector('.why'); w.style.display = 'block';
+        w.innerHTML = (ok ? '<span style="color:var(--ok)">✓</span> ' : '<span style="color:var(--bad)">✗ Answer: ' + esc(ans.map(function (a) { return Array.isArray(a) ? a[0] : a; }).join(' · ')) + '.</span> ') + (it.why || '');
+      });
+      $('#sc', m).textContent = right + '/' + L.items.length;
+      finish(api, L, right === L.items.length, $('#out', m));
+    };
+    common(m, L, api, function () { renderMatch(m, L, api, true); });
+  }
+
+  // ---------------- ORDER ----------------
+  function renderOrder(m, L, api, fresh) {
+    var saved = fresh ? null : api.load(), n = L.items.length;
+    var cur = saved && saved.cur && saved.cur.length === n ? saved.cur : (function () { var o = shuffle(L.items.map(function (_, i) { return i; })); var same = o.every(function (v, i) { return v === i; }); if (same) o.reverse(); return o; })();
+    function draw(checked) {
+      var right = 0;
+      $('#ol', m).innerHTML = cur.map(function (ii, pos) {
+        var ok = ii === pos; if (ok) right++;
+        return '<div class="ord' + (checked ? (ok ? ' pbq-row ok' : ' pbq-row bad') : '') + '"><span class="n">' + (pos + 1) + '</span><span class="t">' + L.items[ii].t + (checked && L.items[ii].why ? '<div class="small muted" style="margin-top:4px">' + (ok ? '✓ ' : '✗ belongs at step ' + (ii + 1) + '. ') + L.items[ii].why + '</div>' : '') + '</span>' +
+          '<button class="btn sm" data-up="' + pos + '" ' + (pos === 0 ? 'disabled' : '') + '>▲</button><button class="btn sm" data-dn="' + pos + '" ' + (pos === n - 1 ? 'disabled' : '') + '>▼</button></div>';
+      }).join('');
+      return right;
+    }
+    m.innerHTML = head(L, api, 'PBQ') + '<div id="ol"></div><div class="row" style="margin-top:10px"><button class="btn pri" id="chk">Check order</button><span class="chip" id="sc"></span></div><div id="out" style="margin-top:10px"></div>' +
+      '<p class="dim small">Use ▲ ▼ to move each step into the correct order (first at the top).</p>';
+    draw(false);
+    $('#ol', m).addEventListener('click', function (e) {
+      var u = e.target.closest('[data-up]'), d = e.target.closest('[data-dn]');
+      if (u) { var i = +u.dataset.up; var t = cur[i]; cur[i] = cur[i - 1]; cur[i - 1] = t; }
+      else if (d) { var j = +d.dataset.dn; var t2 = cur[j]; cur[j] = cur[j + 1]; cur[j + 1] = t2; }
+      else return;
+      api.save({ cur: cur }); draw(false); $('#out', m).innerHTML = '';
+    });
+    $('#chk', m).onclick = function () { var r = draw(true); $('#sc', m).textContent = r + '/' + n; finish(api, L, r === n, $('#out', m)); };
+    common(m, L, api, function () { renderOrder(m, L, api, true); });
+  }
+
+  // ---------------- CALC ----------------
+  function num(v) { var t = String(v).replace(/[$,%\s]/g, ''); return t === '' ? NaN : +t; }
+  function renderCalc(m, L, api, fresh) {
+    var saved = fresh ? null : api.load(), vals = saved && saved.vals ? saved.vals : {};
+    m.innerHTML = head(L, api, 'PBQ') + '<div class="pbq">' + L.fields.map(function (f, i) {
+      var txt = typeof f.a === 'string';
+      return '<div class="pbq-row" data-i="' + i + '"><div class="it">' + f.label + '</div><input class="num"' + (txt ? ' autocapitalize="none" autocorrect="off" spellcheck="false"' : ' inputmode="decimal"') + ' data-f="' + i + '" placeholder="' + esc(f.unit || (txt ? 'answer' : 'number')) + '" value="' + esc(vals[i] || '') + '"><div class="why small" style="flex-basis:100%;display:none"></div></div>';
+    }).join('') + '</div><div class="row" style="margin-top:10px"><button class="btn pri" id="chk">Check</button><span class="chip" id="sc"></span></div><div id="out" style="margin-top:10px"></div>' +
+      '<p class="dim small">Enter plain numbers ($ and commas are fine). Answers within ' + (L.tolPct || 1) + '% are accepted.</p>';
+    m.querySelectorAll('[data-f]').forEach(function (inp) { inp.oninput = function () { vals[inp.dataset.f] = inp.value; api.save({ vals: vals }); inp.closest('.pbq-row').classList.remove('ok', 'bad'); }; });
+    $('#chk', m).onclick = function () {
+      var right = 0;
+      L.fields.forEach(function (f, i) {
+        var r = m.querySelector('.pbq-row[data-i="' + i + '"]'), ok;
+        if (typeof f.a === 'string') {
+          var norm = function (s) { return String(s).trim().toLowerCase().replace(/\s+/g, '').replace(/^\//, ''); };
+          ok = norm(vals[i] || '') === norm(f.a);
+        } else {
+          var v = num(vals[i] || ''), tol = Math.max(Math.abs(f.a) * (L.tolPct || 1) / 100, f.tol || 0.005);
+          ok = !isNaN(v) && Math.abs(v - f.a) <= tol;
+        }
+        if (ok) right++;
+        r.classList.toggle('ok', ok); r.classList.toggle('bad', !ok);
+        var w = r.querySelector('.why'); w.style.display = 'block'; w.innerHTML = (ok ? '<span style="color:var(--ok)">✓</span> ' : '<span style="color:var(--bad)">✗ Expected ' + esc(f.show || f.a) + '.</span> ') + (f.why || '');
+      });
+      $('#sc', m).textContent = right + '/' + L.fields.length;
+      finish(api, L, right === L.fields.length, $('#out', m));
+    };
+    common(m, L, api, function () { renderCalc(m, L, api, true); });
+  }
+
+  // ---------------- ACL (firewall rule builder) ----------------
+  function ip2n(ip) { var p = String(ip).split('.').map(Number); return p.length === 4 && p.every(function (x) { return x >= 0 && x <= 255; }) ? ((p[0] << 24) >>> 0) + (p[1] << 16) + (p[2] << 8) + p[3] : null; }
+  function inNet(ip, spec) {
+    if (spec === 'ANY') return true;
+    var m = /^(\d+\.\d+\.\d+\.\d+)(?:\/(\d+))?$/.exec(spec); if (!m) return false;
+    var bits = m[2] === undefined ? 32 : +m[2], a = ip2n(ip), b = ip2n(m[1]); if (a === null || b === null) return false;
+    var mask = bits === 0 ? 0 : (~0 << (32 - bits)) >>> 0; return ((a & mask) >>> 0) === ((b & mask) >>> 0);
+  }
+  function portOk(port, spec) { if (spec === 'ANY' || spec === '') return true; return String(spec).split(',').some(function (s) { var r = /^(\d+)-(\d+)$/.exec(s.trim()); if (r) return port >= +r[1] && port <= +r[2]; return +s === port; }); }
+  function evalRules(rules, f) {
+    for (var i = 0; i < rules.length; i++) {
+      var r = rules[i];
+      if (!r.src || !r.dst || !r.act) continue;
+      if (!inNet(f.src, r.src) || !inNet(f.dst, r.dst)) continue;
+      if (r.proto !== 'ANY' && r.proto !== f.proto) continue;
+      if (f.proto !== 'ICMP' && !portOk(f.port, r.port || 'ANY')) continue;
+      return { act: r.act, rule: i + 1 };
+    }
+    return { act: 'DENY', rule: 0 };
+  }
+  function renderAcl(m, L, api, fresh) {
+    var saved = fresh ? null : api.load(), N = L.rows || 5;
+    var rules = saved && saved.rules ? saved.rules : (L.prefill || []).concat([]).map(function (r) { return Object.assign({}, r); });
+    while (rules.length < N) rules.push({ src: '', dst: '', proto: 'TCP', port: '', act: '' });
+    function sel(name, opts, v, i) { return '<select data-r="' + i + '" data-k="' + name + '">' + opts.map(function (o) { var val = typeof o === 'string' ? o : o[0], lab = typeof o === 'string' ? o : o[1]; return '<option value="' + esc(val) + '"' + (val === v ? ' selected' : '') + '>' + esc(lab) + '</option>'; }).join('') + '</select>'; }
+    var nets = [['', '—']].concat(L.nets.map(function (n) { return [n[0], n[1] + ' (' + n[0] + ')']; })).concat([['ANY', 'ANY']]);
+    m.innerHTML = head(L, api, 'FIREWALL PBQ') +
+      '<div class="panel tight small" style="margin-bottom:10px"><b>Networks</b><br>' + L.nets.map(function (n) { return esc(n[1]) + ': <code>' + esc(n[0]) + '</code>'; }).join(' · ') + '<br><span class="muted">Rules are checked top to bottom; the first match wins. Anything that matches no rule is denied (implicit deny).</span></div>' +
+      '<div style="overflow-x:auto"><table class="acl"><tr><th>#</th><th>Source</th><th>Destination</th><th>Proto</th><th>Port(s)</th><th>Action</th></tr>' +
+      rules.map(function (r, i) {
+        return '<tr><td class="mono">' + (i + 1) + '</td><td>' + sel('src', nets, r.src, i) + '</td><td>' + sel('dst', nets, r.dst, i) + '</td><td>' + sel('proto', ['TCP', 'UDP', 'ICMP', 'ANY'], r.proto, i) + '</td><td><input data-r="' + i + '" data-k="port" value="' + esc(r.port) + '" placeholder="443 or ANY" inputmode="numeric"></td><td>' + sel('act', [['', '—'], 'ALLOW', 'DENY'], r.act, i) + '</td></tr>';
+      }).join('') + '</table></div>' +
+      '<div class="row" style="margin-top:10px"><button class="btn pri" id="chk">Test the rule set</button><span class="chip" id="sc"></span></div><div id="flows" style="margin-top:8px"></div><div id="out" style="margin-top:10px"></div>';
+    m.querySelector('table').addEventListener('input', function (e) { var t = e.target; if (!t.dataset.k) return; rules[+t.dataset.r][t.dataset.k] = t.value.trim().toUpperCase() === 'ANY' ? 'ANY' : t.value.trim(); api.save({ rules: rules }); });
+    m.querySelector('table').addEventListener('change', function (e) { var t = e.target; if (!t.dataset.k) return; rules[+t.dataset.r][t.dataset.k] = t.value; api.save({ rules: rules }); });
+    $('#chk', m).onclick = function () {
+      var right = 0;
+      $('#flows', m).innerHTML = L.tests.map(function (f) {
+        var r = evalRules(rules, f), ok = r.act === f.expect; if (ok) right++;
+        return '<div class="flow ' + (ok ? 'ok' : 'bad') + '">' + (ok ? '✓ ' : '✗ ') + esc(f.name) + ' — ' + esc(f.src) + ' → ' + esc(f.dst) + ' ' + esc(f.proto) + (f.proto === 'ICMP' ? '' : '/' + f.port) + ': ' + r.act + (r.rule ? ' by rule ' + r.rule : ' (implicit deny)') + (ok ? '' : ' — should be ' + f.expect) + '</div>';
+      }).join('');
+      $('#sc', m).textContent = right + '/' + L.tests.length + ' flows';
+      var extra = L.maxRules && rules.filter(function (r) { return r.src && r.dst && r.act; }).length > L.maxRules;
+      if (extra && right === L.tests.length) { $('#out', m).innerHTML = '<div class="explain"><b class="v" style="color:var(--lock)">Works, but too many rules.</b><div>Every flow behaves correctly, but use ' + L.maxRules + ' rules or fewer — simplify (one rule can cover a whole subnet, and the implicit deny already blocks everything else).</div></div>'; return; }
+      finish(api, L, right === L.tests.length, $('#out', m));
+    };
+    common(m, L, api, function () { renderAcl(m, L, api, true); });
+  }
+
+  window.LAB_KINDS = window.LAB_KINDS || {};
+  window.LAB_KINDS.match = { render: function (m, L, api) { renderMatch(m, L, api, false); } };
+  window.LAB_KINDS.order = { render: function (m, L, api) { renderOrder(m, L, api, false); } };
+  window.LAB_KINDS.calc = { render: function (m, L, api) { renderCalc(m, L, api, false); } };
+  window.LAB_KINDS.acl = { render: function (m, L, api) { renderAcl(m, L, api, false); } };
+  window.PBQ_TEST = { evalRules: evalRules, inNet: inNet };
+})();
+
+;
+/* Net+ depth pack — hands-on PBQ-style labs (match / order / calc / acl), attached to existing stages. */
+(function () {
+  var L = COURSE.labs;
+
+  // ---- s02 OSI match ----
+  L['pb-osi'] = { kind: 'match', title: 'Map it to the OSI layer', sum: 'Protocols, PDUs and devices → layers',
+    brief: 'Pick the OSI layer where each item operates. (TLS encryption → Presentation; ARP serves L3 but runs at L2.)',
+    options: ['1 Physical', '2 Data link', '3 Network', '4 Transport', '5 Session', '6 Presentation', '7 Application'],
+    items: [
+      { t: 'Router / IP packet / ICMP', a: '3 Network', why: 'IP addressing and routing.' },
+      { t: 'Switch / Ethernet frame / MAC', a: '2 Data link', why: 'Frames and MAC addresses.' },
+      { t: 'TCP / UDP / port numbers', a: '4 Transport', why: 'Segments and ports.' },
+      { t: 'Cable, connector, hub, radio, bits', a: '1 Physical', why: 'Raw signaling.' },
+      { t: 'HTTP, DNS, SMTP', a: '7 Application', why: 'User-facing protocols.' },
+      { t: 'TLS encryption / JPEG / character encoding', a: '6 Presentation', why: 'Formatting and encryption.' },
+      { t: 'Session setup, teardown and dialog control (RPC, NetBIOS)', a: '5 Session', why: 'Managing conversations.' }
+    ],
+    hints: ['Bits, frames, packets, segments = layers 1–4.', 'Encryption and encoding sit at Presentation (6).'],
+    debrief: 'Knowing the layer of a symptom (no link light = L1, blocked port = L4, cert error = L6/7) is the backbone of fast troubleshooting.' };
+
+  // ---- s06 ports match ----
+  L['pb-ports'] = { kind: 'match', title: 'Port & protocol lineup', sum: 'Match each service to its port and transport',
+    brief: 'Choose the correct port number and transport for each protocol.',
+    cols: [
+      { name: 'Port', options: ['22', '53', '67/68', '80', '443', '389', '636', '3389', '161', '514'] },
+      { name: 'Transport', options: ['TCP', 'UDP', 'TCP/UDP'] }
+    ],
+    items: [
+      { t: 'SSH / SFTP', a: ['22', 'TCP'], why: 'Secure shell on TCP 22.' },
+      { t: 'DNS', a: ['53', 'TCP/UDP'], why: 'UDP for queries, TCP for zone transfers.' },
+      { t: 'DHCP', a: ['67/68', 'UDP'], why: 'Server 67, client 68.' },
+      { t: 'HTTP', a: ['80', 'TCP'], why: 'Web, unencrypted.' },
+      { t: 'HTTPS', a: ['443', 'TCP'], why: 'HTTP over TLS.' },
+      { t: 'LDAP', a: ['389', 'TCP/UDP'], why: 'Directory lookups.' },
+      { t: 'LDAPS', a: ['636', 'TCP'], why: 'LDAP over TLS.' },
+      { t: 'RDP', a: ['3389', 'TCP'], why: 'Remote Desktop.' },
+      { t: 'SNMP (polling)', a: ['161', 'UDP'], why: 'Traps use 162.' },
+      { t: 'Syslog', a: ['514', 'UDP'], why: 'TLS variant uses 6514.' }
+    ],
+    hints: ['Secure versions: 22, 443, 636 are all TCP.', 'DNS and LDAP answer on both TCP and UDP.'],
+    debrief: 'Ports show up in firewall PBQs constantly. Drill these until the number and transport are automatic.' };
+
+  // ---- s05 subnet calc ----
+  L['pb-subnet'] = { kind: 'calc', title: 'Subnet a network (PBQ)', sum: 'Compute network, broadcast, range and hosts', tolPct: 0,
+    brief: 'A host is <b>172.16.45.130/26</b>. Fill in the subnet details. Type IP addresses in dotted form and counts as numbers.',
+    fields: [
+      { label: 'Subnet mask (dotted decimal)', a: '255.255.255.192', show: '255.255.255.192', why: '/26 = 11111111.11111111.11111111.11000000.' },
+      { label: 'Block size in the 4th octet', a: 64, show: '64', why: '256 − 192 = 64.' },
+      { label: 'Network address', a: '172.16.45.128', show: '172.16.45.128', why: '128 is the multiple of 64 ≤ 130.' },
+      { label: 'Broadcast address', a: '172.16.45.191', show: '172.16.45.191', why: 'Next network .192, minus one.' },
+      { label: 'First usable host', a: '172.16.45.129', show: '172.16.45.129', why: 'Network + 1.' },
+      { label: 'Last usable host', a: '172.16.45.190', show: '172.16.45.190', why: 'Broadcast − 1.' },
+      { label: 'Usable hosts in a /26', a: 62, show: '62', why: '2^6 − 2 = 62.' }
+    ],
+    hints: ['Find the block size first: 256 − mask octet.', 'Network = largest multiple of the block ≤ the address; broadcast = next network − 1.'],
+    debrief: 'This is exactly the subnetting PBQ on the real exam. Write 128-64-32-16-8-4-2-1 on the board first.' };
+
+  // ---- s05 VLSM calc ----
+  L['pb-vlsm'] = { kind: 'calc', title: 'VLSM allocation (PBQ)', sum: 'Carve 192.168.10.0/24 by host need', tolPct: 0,
+    brief: 'From <b>192.168.10.0/24</b>, allocate subnets largest-first: Sales needs 100 hosts, Eng needs 50, Ops needs 20, and a WAN link needs 2. Give each one the smallest prefix that fits, in order from .0.',
+    fields: [
+      { label: 'Sales prefix (e.g. /25)', a: '/25', show: '/25', why: '126 hosts ≥ 100.' },
+      { label: 'Sales network address', a: '192.168.10.0', show: '192.168.10.0', why: 'First block from .0.' },
+      { label: 'Eng prefix', a: '/26', show: '/26', why: '62 hosts ≥ 50.' },
+      { label: 'Eng network address', a: '192.168.10.128', show: '192.168.10.128', why: 'After the /25 (.0–.127).' },
+      { label: 'Ops prefix', a: '/27', show: '/27', why: '30 hosts ≥ 20.' },
+      { label: 'Ops network address', a: '192.168.10.192', show: '192.168.10.192', why: 'After the /26 (.128–.191).' },
+      { label: 'WAN link prefix', a: '/30', show: '/30', why: '2 usable hosts.' },
+      { label: 'WAN network address', a: '192.168.10.224', show: '192.168.10.224', why: 'After the /27 (.192–.223).' }
+    ],
+    hints: ['Always allocate the biggest subnet first so blocks align.', 'Each subnet starts right after the previous one ends.'],
+    debrief: 'Largest-first VLSM avoids overlaps and wasted space — the skill behind every real IP plan.' };
+
+  // ---- s12 availability calc ----
+  L['pb-avail'] = { kind: 'calc', title: 'Availability & recovery math', sum: 'MTBF, MTTR, availability, RTO/RPO', tolPct: 2,
+    brief: 'A core switch failed 3 times over 9,000 operating hours, with repairs of 2, 3 and 1 hours. The business accepts up to 4 hours downtime and 15 minutes of data loss.',
+    fields: [
+      { label: 'MTBF in hours (uptime ÷ number of failures)', a: 3000, show: '3000', why: '9000 ÷ 3.' },
+      { label: 'MTTR in hours (average repair time)', a: 2, show: '2', why: '(2 + 3 + 1) ÷ 3.' },
+      { label: 'Availability as a percent (MTBF ÷ (MTBF + MTTR) × 100, 2 decimals)', a: 99.93, show: '99.93%', why: '3000 ÷ 3002 = 0.99933.' },
+      { label: 'RTO in hours', a: 4, show: '4', why: 'The accepted downtime.' },
+      { label: 'RPO in minutes', a: 15, show: '15', why: 'The accepted data loss.' }
+    ],
+    hints: ['MTBF measures reliability; MTTR measures repair speed.', 'Availability = MTBF ÷ (MTBF + MTTR).'],
+    debrief: 'RTO is about time to restore service; RPO is about how much data you can lose. They drive backup frequency and DR design.' };
+
+  // ---- s13 firewall ACL ----
+  L['pb-acl'] = { kind: 'acl', title: 'Build the firewall rule set', sum: 'Write ordered rules that pass 7 tests', rows: 5, maxRules: 5,
+    brief: 'Write inbound rules for the perimeter firewall. Rules are evaluated <b>top to bottom, first match wins</b>, then an implicit <b>deny all</b>. Requirements:<ol><li>The Internet may reach the <b>web server</b> on HTTPS (443) only.</li><li>The <b>admin workstation</b> may RDP (3389) to the web server.</li><li>The <b>web server</b> may reach the <b>database</b> on 1433.</li><li>Everything else is denied.</li></ol>',
+    nets: [['0.0.0.0/0', 'Internet'], ['203.0.113.10', 'Web server'], ['10.0.5.0/24', 'Database subnet'], ['10.0.9.5', 'Admin workstation']],
+    tests: [
+      { name: 'Internet → web 443', src: '198.51.100.7', dst: '203.0.113.10', proto: 'TCP', port: 443, expect: 'ALLOW' },
+      { name: 'Internet → web RDP', src: '198.51.100.7', dst: '203.0.113.10', proto: 'TCP', port: 3389, expect: 'DENY' },
+      { name: 'Admin → web RDP', src: '10.0.9.5', dst: '203.0.113.10', proto: 'TCP', port: 3389, expect: 'ALLOW' },
+      { name: 'Web → database 1433', src: '203.0.113.10', dst: '10.0.5.20', proto: 'TCP', port: 1433, expect: 'ALLOW' },
+      { name: 'Internet → database 1433', src: '198.51.100.7', dst: '10.0.5.20', proto: 'TCP', port: 1433, expect: 'DENY' },
+      { name: 'Admin → database 1433', src: '10.0.9.5', dst: '10.0.5.20', proto: 'TCP', port: 1433, expect: 'DENY' },
+      { name: 'Internet → web HTTP 80', src: '198.51.100.7', dst: '203.0.113.10', proto: 'TCP', port: 80, expect: 'DENY' }
+    ],
+    solution: [
+      { src: '0.0.0.0/0', dst: '203.0.113.10', proto: 'TCP', port: '443', act: 'ALLOW' },
+      { src: '10.0.9.5', dst: '203.0.113.10', proto: 'TCP', port: '3389', act: 'ALLOW' },
+      { src: '203.0.113.10', dst: '10.0.5.0/24', proto: 'TCP', port: '1433', act: 'ALLOW' }
+    ],
+    hints: ['Three allow rules are enough — the implicit deny handles the rest.', 'Be specific: the RDP rule source is the admin workstation, not the Internet.', 'Allow only the exact ports (443, 3389, 1433); never open 80.'],
+    debrief: 'Specific allow rules plus a default deny is how every firewall policy is built. Order matters: first match wins.' };
+
+  // ---- s14 troubleshooting order ----
+  L['pb-method'] = { kind: 'order', title: 'Troubleshooting methodology', sum: 'Put the 7 steps in order',
+    brief: 'Arrange the CompTIA Network+ troubleshooting steps in the correct order.',
+    items: [
+      { t: 'Identify the problem (gather info, question users, note recent changes)', why: 'Start by understanding what is actually wrong.' },
+      { t: 'Establish a theory of probable cause', why: 'Form a hypothesis (top-down, bottom-up or divide and conquer).' },
+      { t: 'Test the theory to determine the cause', why: 'Confirm or reject the hypothesis.' },
+      { t: 'Establish a plan of action and identify potential effects', why: 'Decide the fix and its impact.' },
+      { t: 'Implement the solution or escalate', why: 'Carry out the plan.' },
+      { t: 'Verify full system functionality and apply preventive measures', why: 'Make sure it truly works and will not recur.' },
+      { t: 'Document findings, actions and outcomes', why: 'Record it for the next person.' }
+    ],
+    hints: ['Theory comes before testing; verification comes before documentation.', 'Documentation is always last.'],
+    debrief: 'Following the method stops you from fixing symptoms at random. Verify, then document — every time.' };
+
+  // ---- s11 DNS records match ----
+  L['pb-dns'] = { kind: 'match', title: 'DNS record roundup', sum: 'Match each need to the right record',
+    brief: 'Choose the DNS record type for each requirement.',
+    options: ['A', 'AAAA', 'CNAME', 'MX', 'NS', 'PTR', 'SOA', 'TXT', 'SRV'],
+    items: [
+      { t: 'Resolve www.example.com to an IPv4 address', a: 'A', why: 'Host address (IPv4).' },
+      { t: 'Resolve a name to an IPv6 address', a: 'AAAA', why: 'Quad-A.' },
+      { t: 'Point shop.example.com at an existing host name', a: 'CNAME', why: 'Alias.' },
+      { t: 'Deliver email for the domain to the mail server', a: 'MX', why: 'Mail exchanger with priority.' },
+      { t: 'Reverse-resolve 203.0.113.10 to a name', a: 'PTR', why: 'Reverse lookup.' },
+      { t: 'Publish SPF/DKIM/DMARC policy', a: 'TXT', why: 'Text records hold email auth.' },
+      { t: 'Locate the SIP or LDAP service for a domain', a: 'SRV', why: 'Service records.' },
+      { t: 'List the authoritative name servers', a: 'NS', why: 'Name server records.' },
+      { t: 'Store the zone serial number and timers', a: 'SOA', why: 'Start of Authority.' }
+    ],
+    hints: ['Reverse lookups use PTR; aliases use CNAME.', 'Email authentication lives in TXT records.'],
+    debrief: 'DNS record questions are frequent and easy points once these are memorized.' };
+
+  // ---- s10 wireless match ----
+  L['pb-wifi'] = { kind: 'match', title: 'Wireless standards & security', sum: 'Match standards, bands and security',
+    brief: 'Match each wireless item to its correct description.',
+    options: ['Wi-Fi 4 (802.11n)', 'Wi-Fi 5 (802.11ac)', 'Wi-Fi 6/6E (802.11ax)', 'WPA2', 'WPA3', 'WPA2/3-Enterprise', '2.4 GHz channels 1/6/11'],
+    items: [
+      { t: 'First standard to use 6 GHz with mandatory WPA3', a: 'Wi-Fi 6/6E (802.11ax)', why: '6E extends into 6 GHz.' },
+      { t: '5 GHz only, up to ~6.9 Gbps', a: 'Wi-Fi 5 (802.11ac)', why: '802.11ac is 5 GHz.' },
+      { t: '2.4 and 5 GHz, up to 600 Mbps, introduced MIMO', a: 'Wi-Fi 4 (802.11n)', why: '802.11n.' },
+      { t: 'AES-CCMP pre-shared key, replaced WPA/TKIP', a: 'WPA2', why: 'Strong PSK before WPA3.' },
+      { t: 'Uses SAE and mandatory protected management frames', a: 'WPA3', why: 'SAE resists offline cracking.' },
+      { t: 'Per-user login via 802.1X and RADIUS', a: 'WPA2/3-Enterprise', why: 'Enterprise mode.' },
+      { t: 'The only non-overlapping 2.4 GHz channels in North America', a: '2.4 GHz channels 1/6/11', why: '20 MHz wide, 5 MHz apart.' }
+    ],
+    hints: ['6E = 6 GHz; ac = 5 GHz only.', 'Enterprise = 802.1X/RADIUS; Personal = PSK.'],
+    debrief: 'Band, speed and security mode are the three wireless facts every exam question hinges on.' };
+})();
+
+;
+/* Attach PBQ labs to stages. */
+(function(){var X=window.X;
+X.add('s02',{labs:['pb-osi']});
+X.add('s05',{labs:['pb-subnet', 'pb-vlsm']});
+X.add('s06',{labs:['pb-ports']});
+X.add('s10',{labs:['pb-wifi']});
+X.add('s11',{labs:['pb-dns']});
+X.add('s12',{labs:['pb-avail']});
+X.add('s13',{labs:['pb-acl']});
+X.add('s14',{labs:['pb-method']});
 })();
 
 ;
