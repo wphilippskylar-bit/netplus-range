@@ -237,7 +237,7 @@ html,body{overflow-x:hidden}
 <body>
 <noscript>This study app needs JavaScript enabled.</noscript>
 <script>
-/* build 056c24b3e9 */
+/* build ad82c14a84 */
 /* NetSim — a small IOS-style network simulator.
    Devices: pc, srv (server), sw (switch), rtr (router).
    Real L2 (VLAN/trunk) flooding + L3 hop-by-hop forwarding, ACLs, static routes,
@@ -2489,9 +2489,9 @@ window.X = {
       '<li>MAC addresses change at every router hop; source and destination <b>IP addresses stay the same</b> end to end (unless NAT rewrites them).</li>' +
       '<li>Troubleshooting approaches: <b>bottom-up</b> (start at cables), <b>top-down</b> (start at the app), <b>divide and conquer</b> (start in the middle, e.g. ping).</li></ul>' }],
     qs: [
-      Q("At which OSI layer do routers make forwarding decisions?", "Layer 3 — Network", ["Layer 2 — Data link", "Layer 4 — Transport", "Layer 1 — Physical"], "Routers use IP addresses (Layer 3).", 1),
-      Q("A frame check sequence (FCS) used to detect corrupted frames belongs to which layer?", "Data link (Layer 2)", ["Network (Layer 3)", "Transport (Layer 4)", "Session (Layer 5)"], "The Ethernet trailer carries the FCS (CRC).", 1),
-      Q("Port numbers are part of which layer's header?", "Transport (Layer 4)", ["Network (Layer 3)", "Data link (Layer 2)", "Application (Layer 7)"], "TCP/UDP headers carry source and destination ports.", 1),
+      Q("At which OSI layer do routers make forwarding decisions?", "Layer 3", ["Layer 2", "Layer 4", "Layer 1"], "Routers use IP addresses, so they work at Layer 3 (Network).", 1),
+      Q("A frame check sequence (FCS) used to detect corrupted frames belongs to which layer?", "Layer 2", ["Layer 3", "Layer 4", "Layer 5"], "The Ethernet trailer carries the FCS (CRC) at Layer 2 (Data link).", 1),
+      Q("Port numbers are part of which layer's header?", "Layer 4", ["Layer 3", "Layer 2", "Layer 7"], "TCP/UDP headers carry source and destination ports at Layer 4 (Transport).", 1),
       Q("What is the PDU name at the Network layer?", "Packet", ["Frame", "Segment", "Bit"], "Bits (L1), frames (L2), packets (L3), segments/datagrams (L4).", 1),
       Q("What is the correct TCP three-way handshake order?", "SYN, SYN-ACK, ACK", ["ACK, SYN, FIN", "SYN, ACK, SYN-ACK", "SYN, FIN, ACK"], "Client SYN, server SYN-ACK, client ACK.", 1),
       Q("Which TCP flag abruptly ends a connection, for example when a port is closed?", "RST", ["SYN", "PSH", "URG"], "A closed TCP port replies to SYN with RST.", 1),
@@ -2499,24 +2499,24 @@ window.X = {
       Q("Why does VoIP media typically use UDP?", "Retransmitting late voice packets is useless; low delay matters more than reliability", ["UDP encrypts calls", "TCP cannot carry audio", "UDP guarantees delivery"], "Real-time media prefers speed; lost packets are concealed rather than resent.", 1),
       Q("Which TCP feature lets the receiver tell the sender how much data it can accept before an acknowledgment?", "Windowing", ["Checksumming", "Multicasting", "Fragmentation"], "The window size provides flow control.", 1),
       Q("As a packet crosses three routers, which addresses change at each hop?", "Source and destination MAC addresses", ["Source and destination IP addresses", "TCP ports", "Nothing changes"], "Each hop builds a new frame; IPs stay the same unless NAT rewrites them.", 1),
-      Q("Which layer is responsible for encryption and character encoding in the OSI model?", "Presentation (Layer 6)", ["Session (Layer 5)", "Transport (Layer 4)", "Network (Layer 3)"], "Layer 6 formats, encrypts and compresses data.", 1),
-      Q("Which layer establishes, manages and terminates sessions between applications?", "Session (Layer 5)", ["Presentation", "Transport", "Data link"], "Layer 5 handles dialog control.", 1),
-      Q("A user has no link light on their NIC. Which layer is the problem?", "Physical (Layer 1)", ["Network (Layer 3)", "Application (Layer 7)", "Transport (Layer 4)"], "No link = cable, port, NIC or transceiver.", 5),
-      Q("A user gets 'connection refused' to a web server they can ping. Which layer is most likely involved?", "Transport (Layer 4) — the port is closed or blocked", ["Physical", "Data link", "Network"], "Ping proves L3; a refused connection points to the port/service.", 5),
+      Q("Which layer is responsible for encryption and character encoding in the OSI model?", "Layer 6", ["Layer 5", "Layer 4", "Layer 3"], "Layer 6 (Presentation) formats, encrypts and compresses data.", 1),
+      Q("Which layer establishes, manages and terminates conversations between applications?", "Layer 5", ["Layer 6", "Layer 4", "Layer 2"], "Layer 5 (Session) handles dialog control.", 1),
+      Q("A user has no link light on their NIC. Which layer is the problem?", "Layer 1", ["Layer 3", "Layer 7", "Layer 4"], "No link = cable, port, NIC or transceiver: Layer 1 (Physical).", 5),
+      Q("A user gets 'connection refused' to a web server they can ping. Which layer is most likely involved?", "Layer 4", ["Layer 1", "Layer 2", "Layer 3"], "Ping proves Layers 1-3 work; a refused connection points to the port/service at Layer 4 (Transport).", 5),
       Q("Which troubleshooting approach starts by testing with ping to split the problem in half?", "Divide and conquer", ["Top-down", "Bottom-up", "Follow the path only"], "Start in the middle (L3) and move up or down based on the result.", 5),
       Q("Which device operates at Layer 1 only?", "Hub / repeater", ["Switch", "Router", "Firewall"], "Hubs repeat bits without reading addresses.", 1),
       Q("In the TCP/IP model, which layer combines OSI layers 5, 6 and 7?", "Application", ["Transport", "Internet", "Link"], "TCP/IP: Link, Internet, Transport, Application.", 1),
-      Q("In the TCP/IP model, the 'Internet' layer maps to which OSI layer?", "Network (Layer 3)", ["Transport (Layer 4)", "Data link (Layer 2)", "Session (Layer 5)"], "IP lives at the Internet layer.", 1),
+      Q("In the TCP/IP model, the 'Internet' layer maps to which OSI layer?", "Layer 3", ["Layer 4", "Layer 2", "Layer 5"], "IP lives at the Internet layer, which maps to OSI Layer 3 (Network).", 1),
       Q("Which header field prevents IP packets from looping forever?", "TTL (Time to Live)", ["Window size", "FCS", "Sequence number"], "Each router decrements TTL; at 0 the packet is dropped and ICMP Time Exceeded is sent.", 1),
       Q("traceroute discovers hops by:", "Sending packets with increasing TTL values and reading ICMP Time Exceeded replies", ["Querying DNS for each router", "Sending ARP requests", "Using SNMP"], "TTL 1 reveals hop 1, TTL 2 hop 2, and so on.", 5),
       Q("What does encapsulation mean?", "Each layer adds its own header (and trailer) around the data from the layer above", ["Encrypting data", "Compressing files", "Splitting VLANs"], "Data → segment → packet → frame → bits.", 1),
       Q("Which protocol maps an IPv4 address to a MAC address?", "ARP", ["DNS", "RARP only in IPv6", "NAT"], "ARP is broadcast-based; IPv6 uses Neighbor Discovery instead.", 1),
       Q("Which protocol replaces ARP in IPv6?", "NDP (Neighbor Discovery Protocol, ICMPv6)", ["DHCPv6", "IGMP", "LLDP"], "NDP uses neighbor solicitation/advertisement messages.", 1),
-      Q("A web page loads but images are corrupted due to a codec problem. At which layer is the issue?", "Presentation (Layer 6)", ["Physical", "Network", "Transport"], "Formats and encoding are Layer 6 concerns.", 1),
+      Q("A web page loads but images are corrupted due to a codec problem. At which layer is the issue?", "Layer 6", ["Layer 1", "Layer 3", "Layer 4"], "Formats and encoding are Layer 6 (Presentation) concerns.", 1),
       Q("Which OSI layer does a switch normally operate at?", "Layer 2", ["Layer 1", "Layer 3", "Layer 7"], "Switches forward frames by MAC address (L3 switches also route).", 1),
       Q("Which statement about TCP vs UDP is true?", "TCP guarantees ordered delivery; UDP does not", ["UDP is always faster to set up connections", "TCP has no header", "UDP uses a three-way handshake"], "TCP: reliable, ordered, connection-oriented.", 1),
       Q("TCP retransmissions are high on a link. What is the likely underlying cause?", "Packet loss (errors, congestion or drops)", ["Too many VLANs", "Wrong DNS server", "IPv6 enabled"], "TCP resends segments that were not acknowledged.", 5),
-      Q("Which layer adds source and destination MAC addresses?", "Data link", ["Network", "Transport", "Physical"], "The Ethernet frame header holds MAC addresses.", 1),
+      Q("Which layer adds source and destination MAC addresses?", "Layer 2", ["Layer 3", "Layer 4", "Layer 1"], "The Ethernet frame header holds MAC addresses at Layer 2 (Data link).", 1),
       Q("A firewall rule matching 'TCP port 443' operates at least at which layer?", "Layer 4", ["Layer 2", "Layer 1", "Layer 6"], "Port filtering is Transport-layer information.", 4),
       Q("Which approach would you use if users report the CRM app is broken but everything else works?", "Top-down (start at the application)", ["Bottom-up starting with cables", "Replace the core switch", "Reboot all PCs"], "When only one app fails, start at the top.", 5),
       Q("What is the maximum standard Ethernet payload (MTU)?", "1500 bytes", ["9000 bytes", "512 bytes", "64 bytes"], "1500 is standard; 9000-byte jumbo frames are optional.", 1),
@@ -2765,7 +2765,7 @@ window.X = {
       Q("A desk has an IP phone with a PC plugged into it. How is the switch port configured?", "Access port with a data VLAN plus a voice VLAN", ["Trunk with all VLANs", "Two separate ports are required", "Native VLAN 1 only"], "The phone tags voice traffic; the PC's traffic stays untagged on the data VLAN.", 2),
       Q("Which switch becomes the STP root bridge?", "The one with the lowest bridge ID (priority, then MAC)", ["The one with the most ports", "The newest switch", "The one with the highest IP"], "Lower priority wins; ties go to the lowest MAC.", 2),
       Q("What is the default STP bridge priority?", "32768", ["0", "4096", "65535"], "Set the intended root to 4096 or 0 (multiples of 4096).", 2),
-      Q("Which STP port role is the best path toward the root bridge on a non-root switch?", "Root port", ["Designated port", "Alternate port", "Backup port"], "Every non-root switch has exactly one root port.", 2),
+      Q("On a non-root switch, which STP port role is the single best path back toward the top of the spanning tree?", "Root port", ["Designated port", "Alternate port", "Backup port"], "Every non-root switch has exactly one root port.", 2),
       Q("Which standard is Rapid Spanning Tree?", "802.1w", ["802.1D", "802.1Q", "802.3ad"], "RSTP converges in seconds instead of 30–50.", 2),
       Q("A port connected to a user's PC should skip STP listening/learning. Configure:", "PortFast", ["Root Guard", "Trunk mode", "LACP"], "Edge ports go straight to forwarding.", 2),
       Q("A user plugs a home switch into an office jack and the port shuts down. Which feature did that?", "BPDU Guard", ["PortFast", "Storm control", "DHCP snooping"], "BPDU Guard err-disables edge ports that receive BPDUs.", 4),
@@ -3012,8 +3012,8 @@ window.X = {
     qs: [
       Q("Which attack sends forged ARP replies so traffic flows through the attacker?", "ARP poisoning (on-path)", ["DNS poisoning", "VLAN hopping", "SYN flood"], "Dynamic ARP Inspection mitigates it.", 4),
       Q("Which switch feature validates ARP replies against a trusted binding table?", "Dynamic ARP Inspection", ["BPDU Guard", "PortFast", "Storm control"], "Built on the DHCP snooping database.", 4),
-      Q("Which security model assumes no implicit trust, even inside the network?", "Zero Trust", ["Perimeter-only", "Open access", "Flat network"], "Verify every request; least privilege.", 4),
-      Q("A flood of SYN packets fills a server's connection table so it cannot serve users. This is a:", "SYN flood (DoS)", ["On-path attack", "Phishing", "Evil twin"], "Mitigate with SYN cookies and rate limiting.", 4),
+      Q("Which security model assumes no implicit confidence in any user or device, even inside the network?", "Zero Trust", ["Perimeter-based model", "Open access", "Flat network"], "Verify every request; least privilege.", 4),
+      Q("A burst of half-open TCP handshakes fills a server's connection table so it cannot serve users. This is a:", "SYN flood (DoS)", ["On-path attack", "Phishing", "Evil twin"], "Many SYNs with no final ACK exhaust the table. Mitigate with SYN cookies and rate limiting.", 4),
       Q("Which attack uses many compromised hosts to overwhelm a target at once?", "DDoS", ["DoS from one host", "Dictionary attack", "Shoulder surfing"], "Distributed denial of service.", 4),
       Q("Which social-engineering attack follows an authorized person through a secure door?", "Tailgating", ["Phishing", "Pretexting", "Vishing"], "Access control vestibules (mantraps) help.", 4),
       Q("Which control best prevents tailgating into a data center?", "Access control vestibule (mantrap)", ["A longer password", "DHCP snooping", "An ACL"], "Physical, one person at a time.", 4),
@@ -3025,7 +3025,7 @@ window.X = {
       Q("A badge plus a fingerprint is an example of:", "Multifactor authentication (have + are)", ["Single sign-on", "Least privilege", "Something you know only"], "Two different factor types.", 4),
       Q("Which is the weakest access control if used by itself on Wi-Fi?", "MAC filtering", ["WPA3-Enterprise", "802.1X with EAP-TLS", "Certificate authentication"], "MAC addresses are easily spoofed.", 4),
       Q("Which principle gives users only the access they need to do their jobs?", "Least privilege", ["Implicit allow", "Full trust", "Defense in depth"], "Limits blast radius.", 4),
-      Q("Which firewall type tracks the state of connections and allows return traffic automatically?", "Stateful firewall", ["Stateless packet filter", "Hub", "Proxy ARP"], "Maintains a connection table.", 4),
+      Q("Which firewall type remembers ongoing connections and allows return traffic automatically?", "Stateful firewall", ["Stateless packet filter", "Hub", "Proxy ARP"], "It maintains a connection table; a stateless filter checks each packet in isolation.", 4),
       Q("What is typically the last line of a firewall ACL?", "Implicit deny all", ["Permit all", "A log-only rule", "A NAT statement"], "Anything not explicitly allowed is denied.", 4),
       Q("Where should Internet-facing servers be placed?", "In a screened subnet (DMZ)", ["On the internal LAN", "On the management VLAN", "In the guest SSID"], "Isolate from the internal network.", 4),
       Q("Which attack broadcasts a fake AP with the company SSID to capture credentials?", "Evil twin", ["Rogue DHCP", "ARP poisoning", "Smurf"], "Validate the RADIUS server certificate to defend.", 4),
@@ -3955,7 +3955,7 @@ window.X = {
       { t: 'Cable, connector, hub, radio, bits', a: '1 Physical', why: 'Raw signaling.' },
       { t: 'HTTP, DNS, SMTP', a: '7 Application', why: 'User-facing protocols.' },
       { t: 'TLS encryption / JPEG / character encoding', a: '6 Presentation', why: 'Formatting and encryption.' },
-      { t: 'Session setup, teardown and dialog control (RPC, NetBIOS)', a: '5 Session', why: 'Managing conversations.' }
+      { t: 'Setup, teardown and dialog control of conversations (RPC, NetBIOS)', a: '5 Session', why: 'Managing conversations between applications.' }
     ],
     hints: ['Bits, frames, packets, segments = layers 1–4.', 'Encryption and encoding sit at Presentation (6).'],
     debrief: 'Knowing the layer of a symptom (no link light = L1, blocked port = L4, cert error = L6/7) is the backbone of fast troubleshooting.' };
