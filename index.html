@@ -4219,7 +4219,7 @@ COURSE.tools = window.NET_TOOLS;
     var main = $('#main'); main.innerHTML = '';
     document.querySelectorAll('#nav button').forEach(function (b) { b.classList.toggle('on', b.dataset.nav === parts[0] || (parts[0] === 'stage' && b.dataset.nav === 'path') || (parts[0] === 'lab' && b.dataset.nav === 'labs')); });
     topbar();
-    var R = { path: vPath, stage: vStage, lab: vLab, cards: vCards, labs: vLabs, tools: vTools, tool: vTool, codes: vCodes };
+    var R = { path: vPath, stage: vStage, lab: vLab, cards: vCards, labs: vLabs, tools: vTools, tool: vTool, exam: vExam, codes: vCodes };
     (R[parts[0]] || vPath)(main, parts.slice(1));
     window.scrollTo(0, 0);
   }
@@ -4234,7 +4234,7 @@ COURSE.tools = window.NET_TOOLS;
     html += '<div class="panel" style="margin-bottom:6px"><div class="tag">' + esc(C.subtitle || '') + '</div>';
     var coreS = STAGES.filter(function (s) { return s.tier !== 'pro'; });
     var examReady = coreS.length && coreS.every(function (s) { return st(s.id).passed; });
-    if (examReady) html += '<div class="chip ok" style="display:block;margin:8px 0;padding:8px 10px;line-height:1.4">🎓 <b>Exam-ready</b> — you have cleared every graded domain. Time to book the real certification exam.</div>';
+    if (examReady) html += '<div class="panel" style="border-color:var(--ok);margin:8px 0"><div style="line-height:1.4">🎓 <b>Exam-ready</b> — you have cleared every graded domain. Time to book the real certification exam.</div><div class="row" style="margin-top:8px"><button class="btn pri" data-go="#exam">Take a full practice exam →</button></div></div>';
     if (cur) {
       html += '<h2 style="margin:6px 0">Next up: ' + esc(cur.title) + '</h2><p class="muted small">' + esc(cur.goal || '') + '</p>' +
         '<div class="row"><button class="btn pri" data-go="#stage/' + cur.id + '">Continue</button>' +
@@ -4437,6 +4437,16 @@ COURSE.tools = window.NET_TOOLS;
       '<button class="btn pri" id="go">Start ' + (cap ? 'exam' : 'gate test') + '</button></div>' +
       (x.passed ? '<div class="panel" style="margin-top:12px"><div class="tag">Checkpoint phrase for this step</div><div class="code" style="margin-top:8px">' + esc(s.code) + '</div></div>' : '');
     $('#go', p).onclick = function () { runTest(p, s, buildSet(s, n), cap); };
+  }
+  function vExam(m) {
+    var s = STAGES.filter(function (x) { return x.capstone; })[0];
+    if (!s) { m.innerHTML = '<div class="panel">No practice exam in this course yet.</div>'; return; }
+    var cap = s.capstone, x = st(s.id);
+    m.innerHTML = '<div class="tag">Practice exam</div><h1 style="margin:4px 0 6px">' + esc(s.title) + '</h1>' +
+      '<div class="panel"><p>A full <b>' + cap.n + '-question</b> exam weighted to the official domain percentages, on a <b>' + cap.minutes + '-minute</b> timer — just like the real thing. Retake as often as you want; it reshuffles and regenerates each attempt.</p>' +
+      '<p class="muted small">Best so far: ' + (x.best ? x.best + '%' : '—') + ' · attempts: ' + (x.attempts || 0) + '. You need over ' + PASS + '% here — well above the real pass line, so exam day feels easy.</p>' +
+      '<div class="row"><button class="btn pri" id="go">Start practice exam</button><button class="btn" data-go="#path">Back to path</button></div></div><div id="pane"></div>';
+    $('#go', m).onclick = function () { runTest($('#pane', m), s, buildSet(s, cap.n), cap); };
   }
   function buildSet(s, n) {
     if (s.capstone) {
