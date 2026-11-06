@@ -2036,7 +2036,8 @@ window.COURSE = {
       T('Type the interface command to relay DHCP to server 10.50.0.10.', ['ip helper-address 10.50.0.10'], 'ip helper-address 10.50.0.10', 2, 'IOS interface command'),
       T('Which DNS record type is an alias? (one word)', ['cname'], 'CNAME = canonical name alias.', 1)
     ],
-    labs: ['l-dhcp', 'l-relay']
+    labs: ['l-dhcp', 'l-relay'],
+    segs: [{ lab: 'l-dhcp' }, { quiz: [3, 4, 5, 6, 18] }, null, { quiz: [7, 11, 12] }, { quiz: [8, 10, 13] }, { quiz: [9, 14] }]
   });
 
   S.push({
@@ -4290,6 +4291,21 @@ COURSE.tools = window.NET_TOOLS;
     var idx = view.part[s.id]; if (idx == null) idx = Math.min(read, N - 1);
     idx = Math.max(0, Math.min(idx, N - 1)); view.part[s.id] = idx;
     var isLast = idx === N - 1, pctRead = Math.round(100 * read / N);
+    var seg = (s.segs || [])[idx], segHtml = '';
+    if (seg && seg.lab && C.labs[seg.lab]) {
+      var ld = st(s.id).labs[seg.lab], L = C.labs[seg.lab];
+      segHtml += '<div class="panel" style="border-color:var(--acc2);margin-top:12px"><div class="tag">🧪 Hands-on for this segment</div>' +
+        '<b style="display:block;margin:4px 0">' + esc(L.title) + '</b><div class="muted small">' + esc(L.sum || '') + '</div>' +
+        '<div class="row" style="margin-top:8px;gap:8px"><button class="btn pri" data-go="#lab/' + seg.lab + '">' + (ld ? 'Revisit lab' : 'Open the lab →') + '</button>' + (ld ? '<span class="chip ok">✓ Done</span>' : '') + '</div></div>';
+    } else if (seg && seg.quiz && seg.quiz.length) {
+      segHtml += '<div class="panel" style="border-color:var(--acc2);margin-top:12px"><div class="tag">✎ Quick check</div><div id="sq"></div></div>';
+    }
+    if (isLast) {
+      var used = (s.segs || []).filter(function (g) { return g && g.lab; }).map(function (g) { return g.lab; });
+      var wrap = (s.labs || []).filter(function (id) { return used.indexOf(id) < 0 && C.labs[id]; });
+      if (wrap.length) segHtml += '<div class="panel" style="border-color:var(--lock);margin-top:12px"><div class="tag">🏁 Stage wrap-up — put it together</div>' +
+        wrap.map(function (id) { var wd = st(s.id).labs[id], W = C.labs[id]; return '<div class="row" style="margin-top:8px;gap:8px"><span class="grow"><b>' + esc(W.title) + '</b><div class="muted small">' + esc(W.sum || '') + '</div></span><button class="btn ' + (wd ? '' : 'pri') + '" data-go="#lab/' + id + '">' + (wd ? 'Done ✓' : 'Open →') + '</button></div>'; }).join('') + '</div>';
+    }
     var html = '<div class="row" style="justify-content:space-between;align-items:center;margin-bottom:8px">' +
       '<span class="tag">Part ' + (idx + 1) + ' of ' + N + '</span>' +
       '<span class="chip ' + (read >= N ? 'ok' : '') + '">' + read + '/' + N + ' parts read</span></div>' +
@@ -4298,6 +4314,7 @@ COURSE.tools = window.NET_TOOLS;
       '<div class="row small" style="margin-top:8px;align-items:center;gap:8px"><span class="muted">Switching devices? Resume code for this part:</span>' +
       '<span class="mono" style="color:var(--acc)">' + esc(partCode(s, idx)) + '</span>' +
       '<button class="btn sm ghost" data-cp="' + esc(partCode(s, idx)) + '">Copy</button></div>' +
+      segHtml +
       '<div class="row" style="margin-top:12px;justify-content:space-between">' +
       '<button class="btn" id="pv"' + (idx === 0 ? ' disabled' : '') + '>← Back</button>' +
       (!isLast ? '<button class="btn pri" id="nx">' + (idx < read ? 'Next part →' : 'I read it — next part →') + '</button>'
@@ -4309,6 +4326,20 @@ COURSE.tools = window.NET_TOOLS;
     var pv = $('#pv', p); if (pv) pv.onclick = function () { view.part[s.id] = idx - 1; route(); };
     var nx = $('#nx', p); if (nx) nx.onclick = function () { if (!x.lesson && idx + 1 > (x.pread || 0)) x.pread = idx + 1; if ((x.pread || 0) >= N) x.lesson = true; view.part[s.id] = idx + 1; persist(); route(); };
     var fin = $('#fin', p); if (fin) fin.onclick = function () { x.pread = N; x.lesson = true; persist(); route(); };
+    if (seg && seg.quiz && seg.quiz.length) {
+      var sq = $('#sq', p), qi = 0;
+      var draw = function () {
+        if ((x.seg && x.seg[idx]) || qi >= seg.quiz.length) { sq.innerHTML = '<span class="chip ok">✓ Check complete</span>'; if (!x.seg) x.seg = {}; x.seg[idx] = true; persist(); return; }
+        var q = prep(s.qs[seg.quiz[qi]]);
+        sq.innerHTML = '<div class="small muted" style="margin-bottom:6px">Q' + (qi + 1) + ' / ' + seg.quiz.length + '</div><div id="sqp">' + renderQ(q) + '</div>';
+        wire($('#sqp', sq), q, function () {
+          var r = document.createElement('div'); r.className = 'row'; r.style.marginTop = '8px';
+          r.innerHTML = '<button class="btn pri" id="sqn">' + (qi + 1 >= seg.quiz.length ? 'Finish check ✓' : 'Next →') + '</button>';
+          $('#sqp', sq).appendChild(r); $('#sqn', sq).onclick = function () { qi++; draw(); };
+        }, true);
+      };
+      draw();
+    }
   }
 
   // ---------- flashcards (Leitner) ----------
