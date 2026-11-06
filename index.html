@@ -4230,6 +4230,8 @@ COURSE.tools = window.NET_TOOLS;
   });
 
   // ---------- PATH ----------
+  function stageDomains(s) { var ds = {}; (s.qs || []).forEach(function (q) { if (q.d) ds[q.d] = 1; }); return Object.keys(ds).sort(function (a, b) { return a - b; }); }
+  function domLabel(d) { var n = (C.domains && C.domains[d]) || ('' + d); var m = n.match(/^\s*(\d+(?:\.\d+)?)/); return m ? m[1] : n; }
   function vPath(m) {
     var cur = current(), html = '';
     html += '<div class="panel" style="margin-bottom:6px"><div class="tag">' + esc(C.subtitle || '') + '</div>';
@@ -4249,8 +4251,21 @@ COURSE.tools = window.NET_TOOLS;
       list.forEach(function (s) {
         var x = st(s.id), un = unlocked(s), cls = x.passed ? 'done' : (cur && cur.id === s.id ? 'cur' : (un ? '' : 'locked'));
         var sub = x.passed ? 'Passed · best ' + x.best + '%' : (un ? (s.goal || '') : 'Locked — pass step ' + s.idx + ' first');
+        var doms = stageDomains(s);
+        var domHtml = doms.length ? '<span class="s" style="margin-top:4px;display:block">' + doms.map(function (d) { return '<span class="chip" title="' + esc(C.domains[d] || '') + '" style="padding:0 6px;font-size:10px;margin:0 4px 2px 0">' + esc(domLabel(d)) + '</span>'; }).join('') + '</span>' : '';
         html += '<button class="node ' + cls + '" ' + (un ? 'data-go="#stage/' + s.id + '"' : 'data-locked="1"') + '>' +
-          '<span class="num">' + (x.passed ? '✓' : (un ? (s.idx + 1) : '🔒')) + '</span><span class="grow"><span class="t">' + (s.idx + 1) + '. ' + esc(s.title) + '</span><br><span class="s">' + esc(sub) + '</span></span></button>';
+          '<span class="num">' + (x.passed ? '✓' : (un ? (s.idx + 1) : '🔒')) + '</span><span class="grow"><span class="t">' + (s.idx + 1) + '. ' + esc(s.title) + '</span><br><span class="s">' + esc(sub) + '</span>' + domHtml + '</span></button>';
+        var parts = s.lesson || [], rd = x.lesson ? parts.length : (x.pread || 0);
+        if (un && parts.length) {
+          html += '<div style="margin:1px 0 12px 22px;border-left:2px solid var(--line);padding-left:12px;display:flex;flex-direction:column;gap:5px">' +
+            parts.map(function (sec, i) {
+              var done = i < rd, seg = (s.segs || [])[i];
+              var tg = seg && seg.lab ? '🧪 lab' : (seg && seg.quiz ? '✎ check' : '');
+              return '<button data-go="#stage/' + s.id + '/learn/' + i + '" style="display:flex;align-items:center;gap:8px;background:none;border:0;padding:3px 2px;cursor:pointer;text-align:left;font:inherit;color:' + (done ? 'var(--ok)' : 'var(--muted)') + '">' +
+                '<span style="flex:0 0 18px;height:18px;border-radius:50%;border:1px solid currentColor;display:inline-flex;align-items:center;justify-content:center;font-size:11px">' + (done ? '✓' : (i + 1)) + '</span>' +
+                '<span style="flex:1;min-width:0">' + esc(sec.h || ('Part ' + (i + 1))) + '</span>' + (tg ? '<span class="chip" style="padding:0 6px;font-size:10px">' + tg + '</span>' : '') + '</button>';
+            }).join('') + '</div>';
+        }
       });
       html += '</div>';
     });
@@ -4265,11 +4280,13 @@ COURSE.tools = window.NET_TOOLS;
     if (!unlocked(s)) { location.hash = '#path'; return; }
     var tab = args[1] || view.tab[s.id] || 'learn';
     view.tab[s.id] = tab;
+    if (tab === 'learn' && args[2] != null && args[2] !== '') view.part[s.id] = Math.max(0, parseInt(args[2], 10) || 0);
     var x = st(s.id);
     var tabs = [['learn', 'Learn'], ['cards', 'Cards (' + s.cards.length + ')'], ['practice', 'Practice'], ['labs', 'Labs (' + labsDone(s) + '/' + (s.labs || []).length + ')'], ['gate', x.passed ? 'Gate ✓' : 'Gate 🔒']];
     if (!(s.labs || []).length) tabs.splice(3, 1);
     m.innerHTML = '<div class="tag">' + esc((C.tiers.filter(function (t) { return t.id === s.tier; })[0] || {}).name) + ' · Step ' + (s.idx + 1) + ' of ' + STAGES.length + '</div>' +
       '<h1 style="margin:4px 0 6px">' + esc(s.title) + '</h1><p class="muted" style="margin:0 0 8px">' + esc(s.goal || '') + '</p>' +
+      (stageDomains(s).length ? '<div style="margin:0 0 8px">' + stageDomains(s).map(function (d) { return '<span class="chip" title="' + esc((C.domains && C.domains[d]) || '') + '" style="margin:0 6px 4px 0">Domain ' + esc(domLabel(d)) + (C.domains && C.domains[d] ? ' · ' + esc((C.domains[d] || '').replace(/^\s*\d+(?:\.\d+)?\s*/, '')) : '') + '</span>'; }).join('') + '</div>' : '') +
       '<div class="req">' + reqChips(s) + '</div>' +
       '<div class="tabs">' + tabs.map(function (t) { return '<button class="' + (t[0] === tab ? 'on' : '') + '" data-go="#stage/' + s.id + '/' + t[0] + '">' + t[1] + '</button>'; }).join('') + '</div><div id="pane"></div>';
     var pane = $('#pane', m);
