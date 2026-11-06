@@ -4212,7 +4212,7 @@ COURSE.tools = window.NET_TOOLS;
   }
 
   // ---------- router ----------
-  var view = { tab: {} }, cleanup = null;
+  var view = { tab: {}, part: {} }, cleanup = null;
   function route() {
     if (cleanup) { try { cleanup(); } catch (e) { } cleanup = null; }
     var h = location.hash || '#path', parts = h.slice(1).split('/');
@@ -4232,6 +4232,9 @@ COURSE.tools = window.NET_TOOLS;
   function vPath(m) {
     var cur = current(), html = '';
     html += '<div class="panel" style="margin-bottom:6px"><div class="tag">' + esc(C.subtitle || '') + '</div>';
+    var coreS = STAGES.filter(function (s) { return s.tier !== 'pro'; });
+    var examReady = coreS.length && coreS.every(function (s) { return st(s.id).passed; });
+    if (examReady) html += '<div class="chip ok" style="display:block;margin:8px 0;padding:8px 10px;line-height:1.4">🎓 <b>Exam-ready</b> — you have cleared every graded domain. Time to book the real certification exam.</div>';
     if (cur) {
       html += '<h2 style="margin:6px 0">Next up: ' + esc(cur.title) + '</h2><p class="muted small">' + esc(cur.goal || '') + '</p>' +
         '<div class="row"><button class="btn pri" data-go="#stage/' + cur.id + '">Continue</button>' +
@@ -4278,12 +4281,34 @@ COURSE.tools = window.NET_TOOLS;
       '<span class="chip ' + (x.passed ? 'ok' : 'lock') + '">' + (x.passed ? '✓ Gate ' + x.best + '%' : '🔒 Gate >' + PASS + '%' + (x.best ? ' · best ' + x.best + '%' : '')) + '</span>';
   }
 
+  function lessonParts(s) { return (s.lesson || []).map(function (sec) { return [sec]; }); }
+  function partCode(s, i) { return (s.code || 'STEP').split('-')[0] + '-P' + (i + 1); }
   function pLearn(p, s) {
-    var x = st(s.id);
-    p.innerHTML = '<div class="panel lesson">' + (s.lesson || []).map(function (sec) { return (sec.h ? '<h3>' + esc(sec.h) + '</h3>' : '') + sec.html; }).join('') + '</div>' +
-      '<div class="row" style="margin-top:12px">' + (x.lesson ? '<span class="chip ok">✓ Lesson complete</span>' : '<button class="btn pri" id="mark">I read it — mark lesson complete</button>') +
-      '<button class="btn" data-go="#stage/' + s.id + '/cards">Drill the cards →</button></div>';
-    var b = $('#mark', p); if (b) b.onclick = function () { x.lesson = true; persist(); route(); };
+    var x = st(s.id), parts = lessonParts(s), N = parts.length;
+    if (!N) { p.innerHTML = '<div class="panel">No lesson for this step.</div>'; return; }
+    var read = x.lesson ? N : (x.pread || 0);
+    var idx = view.part[s.id]; if (idx == null) idx = Math.min(read, N - 1);
+    idx = Math.max(0, Math.min(idx, N - 1)); view.part[s.id] = idx;
+    var isLast = idx === N - 1, pctRead = Math.round(100 * read / N);
+    var html = '<div class="row" style="justify-content:space-between;align-items:center;margin-bottom:8px">' +
+      '<span class="tag">Part ' + (idx + 1) + ' of ' + N + '</span>' +
+      '<span class="chip ' + (read >= N ? 'ok' : '') + '">' + read + '/' + N + ' parts read</span></div>' +
+      '<div class="bar" style="margin-bottom:12px"><i style="width:' + pctRead + '%"></i></div>' +
+      '<div class="panel lesson">' + parts[idx].map(function (sec) { return (sec.h ? '<h3>' + esc(sec.h) + '</h3>' : '') + sec.html; }).join('') + '</div>' +
+      '<div class="row small" style="margin-top:8px;align-items:center;gap:8px"><span class="muted">Switching devices? Resume code for this part:</span>' +
+      '<span class="mono" style="color:var(--acc)">' + esc(partCode(s, idx)) + '</span>' +
+      '<button class="btn sm ghost" data-cp="' + esc(partCode(s, idx)) + '">Copy</button></div>' +
+      '<div class="row" style="margin-top:12px;justify-content:space-between">' +
+      '<button class="btn" id="pv"' + (idx === 0 ? ' disabled' : '') + '>← Back</button>' +
+      (!isLast ? '<button class="btn pri" id="nx">' + (idx < read ? 'Next part →' : 'I read it — next part →') + '</button>'
+        : (read >= N ? '<button class="btn" data-go="#stage/' + s.id + '/gate">Go to the Gate test →</button>' : '<button class="btn pri" id="fin">I read it — finish lesson ✓</button>')) +
+      '</div>';
+    if (read >= N) html += '<div class="row" style="margin-top:10px;gap:8px"><span class="chip ok">✓ Lesson complete</span><button class="btn" data-go="#stage/' + s.id + '/cards">Drill the cards →</button></div>';
+    p.innerHTML = html;
+    p.querySelectorAll('[data-cp]').forEach(function (b) { b.onclick = function () { copy(b.dataset.cp); }; });
+    var pv = $('#pv', p); if (pv) pv.onclick = function () { view.part[s.id] = idx - 1; route(); };
+    var nx = $('#nx', p); if (nx) nx.onclick = function () { if (!x.lesson && idx + 1 > (x.pread || 0)) x.pread = idx + 1; if ((x.pread || 0) >= N) x.lesson = true; view.part[s.id] = idx + 1; persist(); route(); };
+    var fin = $('#fin', p); if (fin) fin.onclick = function () { x.pread = N; x.lesson = true; persist(); route(); };
   }
 
   // ---------- flashcards (Leitner) ----------
@@ -4568,7 +4593,7 @@ COURSE.tools = window.NET_TOOLS;
     var earned = STAGES.filter(function (s) { return st(s.id).passed; });
     var hist = S.history.slice(-8).reverse();
     m.innerHTML = '<h1>Save & restore</h1>' +
-      '<div class="panel"><h3>Restore from a checkpoint phrase</h3><p class="muted small">Lost your progress or switched devices? Type the phrase from the last step you passed. Every step up to it unlocks.</p>' +
+      '<div class="panel"><h3>Restore from a checkpoint phrase</h3><p class="muted small">Lost your progress or switched devices? Type the phrase from the last step you passed — every step up to it unlocks. Mid-lesson on another device? Enter a part code like <b>NET02-P3</b> to jump back to the exact part you were reading.</p>' +
       '<div class="row"><input class="answer-in grow" id="rc" placeholder="e.g. ' + esc(C.codeExample || 'PHRASE-HERE') + '" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false"><button class="btn pri" id="rb">Restore</button></div></div>' +
       '<div class="panel" style="margin-top:12px"><h3>Your checkpoint phrases</h3>' +
       (earned.length ? '<div class="list">' + earned.map(function (s) { return '<div class="li" style="cursor:default"><span class="chip ok">' + (s.idx + 1) + '</span><span class="grow"><b>' + esc(s.title) + '</b><div class="mono small" style="color:var(--acc);margin-top:2px">' + esc(s.code) + '</div></span><button class="btn sm" data-cp="' + esc(s.code) + '">Copy</button></div>'; }).join('') + '</div>' +
@@ -4579,7 +4604,21 @@ COURSE.tools = window.NET_TOOLS;
       (hist.length ? '<div class="panel" style="margin-top:12px"><h3>Recent tests</h3>' + hist.map(function (h) { var s = stageById(h.stage); return '<div class="row small" style="margin:4px 0"><span class="grow">' + esc(s ? s.title : h.stage) + '</span><span class="mono" style="color:' + (h.pct >= PASS ? 'var(--ok)' : 'var(--bad)') + '">' + h.pct + '%</span><span class="dim">' + new Date(h.at).toLocaleDateString() + '</span></div>'; }).join('') + '</div>' : '') +
       '<div class="panel" style="margin-top:12px"><h3>Danger zone</h3><button class="btn warn" id="rs">Reset all progress</button></div>';
     $('#rb', m).onclick = function () {
-      var v = normCode($('#rc', m).value);
+      var raw = ($('#rc', m).value || '').trim().toUpperCase();
+      var pm = raw.match(/^([A-Z0-9]+)-P(\d+)$/);
+      if (pm) {
+        var base = pm[1], pn = +pm[2];
+        var ps = STAGES.filter(function (x) { return (x.code || '').split('-')[0].toUpperCase() === base; })[0];
+        if (ps) {
+          var prev = STAGES[ps.idx - 1]; if (prev) restoreTo(prev);
+          var px = st(ps.id), tot = (ps.lesson || []).length;
+          px.pread = Math.max(px.pread || 0, Math.min(pn, tot)); if (px.pread >= tot) px.lesson = true;
+          view.part[ps.id] = Math.max(0, Math.min(pn - 1, tot - 1));
+          persist(); toast('✓ Resumed at step ' + (ps.idx + 1) + ', part ' + pn, 3000);
+          location.hash = '#stage/' + ps.id + '/learn'; route(); return;
+        }
+      }
+      var v = normCode(raw);
       var s = STAGES.filter(function (x) { return normCode(x.code) === v; })[0];
       if (!s) { toast('That phrase does not match any step. Check spelling.'); return; }
       restoreTo(s); toast('✓ Restored through step ' + (s.idx + 1) + ': ' + esc(s.title), 3000); route();
