@@ -4259,7 +4259,7 @@ COURSE.tools = window.NET_TOOLS;
         if (un && parts.length) {
           html += '<div style="margin:1px 0 12px 22px;border-left:2px solid var(--line);padding-left:12px;display:flex;flex-direction:column;gap:5px">' +
             parts.map(function (sec, i) {
-              var done = i < rd, seg = (s.segs || [])[i];
+              var done = i < rd, seg = segsOf(s)[i];
               var tg = seg && seg.lab ? '🧪 lab' : (seg && seg.quiz ? '✎ check' : '');
               return '<button data-go="#stage/' + s.id + '/learn/' + i + '" style="display:flex;align-items:center;gap:8px;background:none;border:0;padding:3px 2px;cursor:pointer;text-align:left;font:inherit;color:' + (done ? 'var(--ok)' : 'var(--muted)') + '">' +
                 '<span style="flex:0 0 18px;height:18px;border-radius:50%;border:1px solid currentColor;display:inline-flex;align-items:center;justify-content:center;font-size:11px">' + (done ? '✓' : (i + 1)) + '</span>' +
@@ -4299,6 +4299,30 @@ COURSE.tools = window.NET_TOOLS;
       '<span class="chip ' + (x.passed ? 'ok' : 'lock') + '">' + (x.passed ? '✓ Gate ' + x.best + '%' : '🔒 Gate >' + PASS + '%' + (x.best ? ' · best ' + x.best + '%' : '')) + '</span>';
   }
 
+  var SEG_STOP = {}; 'the a an and or of to in on for with is are be by as at from this that your you it its into over under not but can will each any all via per use used uses using which what when where whos whose does'.split(' ').forEach(function (w) { SEG_STOP[w] = 1; });
+  function segWords(t) { return ('' + (t || '')).toLowerCase().replace(/<[^>]+>/g, ' ').replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter(function (w) { return w.length > 3 && !SEG_STOP[w]; }); }
+  function autoSegs(s) {
+    var secs = s.lesson || [], qs = s.qs || [], labs = (s.labs || []).slice(), n = secs.length;
+    if (!n) return [];
+    var bags = secs.map(function (sec) { var b = {}; segWords(sec.h).forEach(function (w) { b[w] = (b[w] || 0) + 3; }); segWords(sec.html).forEach(function (w) { b[w] = (b[w] || 0) + 1; }); return b; });
+    var handsLabs = labs.slice(0, Math.max(0, labs.length - 1)); // last lab stays as the wrap-up
+    var segLab = {};
+    handsLabs.forEach(function (lid) {
+      var L = (C.labs || {})[lid] || {}, lw = segWords((L.title || '') + ' ' + (L.sum || '')), best = -1, bi = 0;
+      for (var i = 0; i < n; i++) { if (segLab[i] != null) continue; var sc = 0; lw.forEach(function (w) { if (bags[i][w]) sc += bags[i][w]; }); if (sc > best) { best = sc; bi = i; } }
+      segLab[bi] = lid;
+    });
+    var secQs = {};
+    qs.forEach(function (q, qi) {
+      var qt = segWords(Array.isArray(q) ? q[0] : q.q), best = 0, bi = -1;
+      for (var i = 0; i < n; i++) { if (segLab[i] != null) continue; var sc = 0; qt.forEach(function (w) { if (bags[i][w]) sc += bags[i][w]; }); if (sc > best) { best = sc; bi = i; } }
+      if (bi >= 0) { (secQs[bi] = secQs[bi] || []).push(qi); }
+    });
+    var out = [];
+    for (var i = 0; i < n; i++) { if (segLab[i] != null) out.push({ lab: segLab[i] }); else if (secQs[i] && secQs[i].length) out.push({ quiz: secQs[i].slice(0, 4) }); else out.push(null); }
+    return out;
+  }
+  function segsOf(s) { if (!s._segs) s._segs = s.segs || autoSegs(s); return s._segs; }
   function lessonParts(s) { return (s.lesson || []).map(function (sec) { return [sec]; }); }
   function partCode(s, i) { return (s.code || 'STEP').split('-')[0] + '-P' + (i + 1); }
   function pLearn(p, s) {
@@ -4308,7 +4332,7 @@ COURSE.tools = window.NET_TOOLS;
     var idx = view.part[s.id]; if (idx == null) idx = Math.min(read, N - 1);
     idx = Math.max(0, Math.min(idx, N - 1)); view.part[s.id] = idx;
     var isLast = idx === N - 1, pctRead = Math.round(100 * read / N);
-    var seg = (s.segs || [])[idx], segHtml = '';
+    var SG = segsOf(s), seg = SG[idx], segHtml = '';
     if (seg && seg.lab && C.labs[seg.lab]) {
       var ld = st(s.id).labs[seg.lab], L = C.labs[seg.lab];
       segHtml += '<div class="panel" style="border-color:var(--acc2);margin-top:12px"><div class="tag">🧪 Hands-on for this segment</div>' +
@@ -4318,7 +4342,7 @@ COURSE.tools = window.NET_TOOLS;
       segHtml += '<div class="panel" style="border-color:var(--acc2);margin-top:12px"><div class="tag">✎ Quick check</div><div id="sq"></div></div>';
     }
     if (isLast) {
-      var used = (s.segs || []).filter(function (g) { return g && g.lab; }).map(function (g) { return g.lab; });
+      var used = SG.filter(function (g) { return g && g.lab; }).map(function (g) { return g.lab; });
       var wrap = (s.labs || []).filter(function (id) { return used.indexOf(id) < 0 && C.labs[id]; });
       if (wrap.length) segHtml += '<div class="panel" style="border-color:var(--lock);margin-top:12px"><div class="tag">🏁 Stage wrap-up — put it together</div>' +
         wrap.map(function (id) { var wd = st(s.id).labs[id], W = C.labs[id]; return '<div class="row" style="margin-top:8px;gap:8px"><span class="grow"><b>' + esc(W.title) + '</b><div class="muted small">' + esc(W.sum || '') + '</div></span><button class="btn ' + (wd ? '' : 'pri') + '" data-go="#lab/' + id + '">' + (wd ? 'Done ✓' : 'Open →') + '</button></div>'; }).join('') + '</div>';
