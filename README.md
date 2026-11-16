@@ -4,11 +4,17 @@ CompTIA Network+ (N10-009) from zero → exam-ready → 10-year network engineer
 A self-contained, offline-capable PWA built for iPhone and laptop.
 
 ## What's inside
-- **20-step locked path**: Foundations → Exam Core → Capstone → Pro Track.
-  Each step = lesson, flashcards, explained practice questions, labs, and a **gate test**.
-  You must finish the labs and score **over 90%** on the gate to unlock the next step.
-- **Checkpoint phrases**: every passed step gives you a phrase (e.g. `NET01-COPPER-LANTERN`).
+- **Domain → objective path, in official N10-009 order** (like TryHackMe rooms / Professor Messer's objective-by-objective videos):
+  Domain 1 (1.1–1.8) → Domain 2 (2.1–2.4) → Domain 3 (3.1–3.5) → Domain 4 (4.1–4.3) → Domain 5 (5.1–5.5) → Exam Ready → Pro Track.
+  Domains never mix until the final practice exam.
+- **Every objective = short parts (~2–5 min)**. Each part opens with "🎯 Objective for this part",
+  teaches one idea, ends with a ✎ quick check, and is paired with a 🧪 lab that practices only what that part taught.
+  One tap flips between the part and its lab ("Flip to the lab →" / "⇄ Flip back to Learn").
+- **Objective wrap-up** (recap + combined lab + 15-question objective test) and a **Domain wrap-up**
+  (recap of every objective + combined lab + 30-question domain test). 90% or better unlocks the next one.
+- **Checkpoint phrases**: every passed objective gives you a phrase (e.g. `N11-COPPER-…`).
   Type your latest one into **Save → Restore** on any device to pick up where you left off.
+  Progress from the old topic-based layout carries over by domain.
 - **Network simulator labs**: PCs, switches and routers with IOS-style CLI — VLANs, trunks,
   router-on-a-stick, static/floating routes, OSPF, DHCP + relay, ACLs, hardening, and
   broken-network troubleshooting tickets. Tasks are checked live by the simulator.
