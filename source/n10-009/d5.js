@@ -80,7 +80,7 @@
     goal: 'Wrong cable/fiber type, signal degradation, termination and TX/RX faults, interface counters, port states, PoE budget and standards, transceiver mismatch and signal strength.',
     parts: [
       P('Cable problems and signal degradation', 'Diagnose wrong cable type, attenuation, crosstalk, interference, bad terminations and TX/RX swaps.',
-        `<ul><li><b>Incorrect cable</b> — single-mode vs multimode mixed up; Cat 5e used where 10G needs Cat 6a; UTP near heavy EMI where STP is needed.</li>
+        `<ul><li><b>Incorrect cable</b> — single-mode vs multimode mixed up; the wrong category for the speed (Cat 5e/6 where 10G at 100 m needs Cat 6a; Cat 7 is shielded 10G; Cat 8 is 25/40G but only to 30 m); UTP near heavy EMI where STP is needed.</li>
 <li><b>Signal degradation</b>:
 <ul><li><b>Attenuation</b> — signal fades with distance (copper > 100 m, fiber too long or too many splices/bends).</li>
 <li><b>Crosstalk</b> — signal bleeds between pairs (NEXT/FEXT), usually from untwisting pairs too far at the termination.</li>

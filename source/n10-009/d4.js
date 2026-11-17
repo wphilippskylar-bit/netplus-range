@@ -70,7 +70,7 @@
 <li><b>TACACS+</b> — Cisco AAA for <b>device administration</b>. TCP 49; encrypts the entire payload; per-command authorization.</li>
 <li><b>LDAP</b> — query a directory (Active Directory). 389; LDAPS 636.</li>
 <li><b>SAML</b> — XML assertions passing identity from an identity provider to cloud/web apps (web SSO).</li>
-<li><b>Least privilege</b> — minimum rights needed. <b>RBAC</b> — rights assigned to roles; users get roles.</li></ul>`,
+<li><b>Least privilege</b> — minimum rights needed. <b>RBAC</b> (role-based access control) — rights are assigned to roles; users get roles.</li></ul>`,
         [['Which AAA protocol encrypts the entire payload and supports per-command authorization?', 'TACACS+', ['RADIUS', 'LDAP', 'SAML'], 'TCP 49, device admin.'],
          ['A password plus a fingerprint is an example of:', 'MFA', ['SSO', 'RBAC', 'SAML'], 'Know + are.']],
         'n9-aaa'),

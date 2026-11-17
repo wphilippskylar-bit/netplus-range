@@ -1,8 +1,7 @@
 import sys, glob, os
-SRC = '/home/claude/netplus-range/index.html'
-ORIG = '/home/claude/work/index.orig.html'
-if not os.path.exists(ORIG):
-    open(ORIG, 'w').write(open(SRC).read())
+HERE = os.path.dirname(os.path.abspath(__file__))
+SRC = os.path.join(HERE, '..', '..', 'index.html')        # the deployed page at the repo root
+ORIG = os.path.join(HERE, 'index.orig.html')              # the pre-restructure page (question banks, simulator, engine)
 s = open(ORIG).read()
 
 def rep(a, b, count=1):
@@ -12,9 +11,9 @@ def rep(a, b, count=1):
     s = s.replace(a, b)
 
 # 1) content + restructure scripts go right before the generator wiring (i.e. before the engine)
-files = sorted(glob.glob('/home/claude/work/n9/*.js'))
+files = sorted(glob.glob(os.path.join(HERE, '*.js')))
 order = [f for f in files if '00-base' in f] + [f for f in files if '01-assign' in f] + \
-        [f for f in files if os.path.basename(f)[0] in 'de'] + [f for f in files if '99-build' in f]
+        [f for f in files if os.path.basename(f)[0] in 'de'] + [f for f in files if 'rk-base' in f] + [f for f in files if os.path.basename(f)[0] in 'fg'] + [f for f in files if '99-build' in f]
 blob = '\n;\n'.join(open(f).read() for f in order)
 rep('/* Wire Net+ generators and tools into the course. */', blob + '\n;\n/* Wire Net+ generators and tools into the course. */')
 
@@ -193,5 +192,5 @@ rep("""      STAGES.forEach(function (o) { if (o.idx <= s.idx && o.tier !== 'pro
 """      var seenQ = {};
       STAGES.forEach(function (o) { if (o.idx <= s.idx && o.tier !== 'pro' && !o.domWrap) o.qs.forEach(function (q) { var k = q.gen ? null : String(q.q); if (q.d && (!k || !seenQ[k])) { if (k) seenQ[k] = 1; pool.push(q); } }); });""")
 
-open('/home/claude/netplus-range/index.html', 'w').write(s)
+open(SRC, 'w').write(s)
 print('ok', len(s))
